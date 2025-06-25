@@ -1,55 +1,40 @@
-from typing import OrderedDict, List, Tuple
-import math
-import re
+import numpy as np
+from torchvision.datasets import CIFAR10, MNIST
+import torch
+import torch.nn.functional as F
 
-# simple pattern to extract words based on word boundary
-pattern = re.compile(r'\w+')
+def cosine_similarity(np_array1, np_array2):
+    print("FIRST ARRAY FLATTENED:", np_array1.flatten())
+    print("SECOND ARRAY FLATTENED:", np_array2.flatten())
+    print(f"Shape of First Array/First Array Flattened: {np_array1.shape}/{np_array1.flatten().shape}")
+    print(f"Shape of Second Array/Second Array Flattened: {np_array2.shape}/{np_array2.flatten().shape}")
+    numerator = np.dot(np_array1.flatten(), np_array2.flatten())
+    print(numerator)
+    sum_1 = 0
+    sum_2 = 0
+    for element in np_array1:
+        sum_1+=element**2
+    for element in np_array2:
+        sum_2+=element**2
+    denominator = np.sqrt(sum_1)*np.sqrt(sum_2)
+    cosine_similarity = (numerator*1.0)/denominator
+    return cosine_similarity
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+#CIFAR LOAD
+cifar = CIFAR10(root='data', train=True, download=True)
+data_np_cifar = cifar.data.astype(np.float32) / 255.0
+data_np_cifar = np.transpose(data_np_cifar, (0, 3, 1, 2))  
+#MNIST LOAD
+mnist = MNIST(root='data', train=True, download=True)
+data_np_mnist = mnist.data.numpy().astype(np.float32) / 255.0
+data_np_mnist = data_np_mnist[:, None, :, :]  
+#MNIST MANIPULATION
+mnist_tensor = torch.from_numpy(data_np_mnist)
+mnist_tensor = F.interpolate(mnist_tensor, size=(32, 32), mode='bilinear', align_corners=False)
+mnist_tensor = mnist_tensor.repeat(1, 3, 1, 1)
+data_np_mnist = mnist_tensor[:50000].detach().cpu().numpy()
 
-# this function seperates words in a body of text, this can be expanded to remove non alpha numerics within words
-def gather_words (input : str) -> List[str] :
+print("Cosine Similarity (only cosine):", cosine_similarity(data_np_mnist, data_np_cifar))
+print("Cosine Similarity Score:", np.arccos(cosine_similarity(data_np_mnist, data_np_cifar)))
 
-    # words are lowercased to allow for easier matching between sets of words
-    return list(map(lambda w : w.lower(), re.findall(pattern,input)))
-
-
-# this function counts the occurances of words in two bodys of text obtaining two vectors of equal length.
-# these vectors are used to calculate the cosine distance https://en.wikipedia.org/wiki/Cosine_similarity 
-def cosine_similarity (inputA : str, inputB : str) -> Tuple[List[int],List[int]] :
-
-    # an ordered dictionary is used to ensure that further calculations or aggregations are evaluated in order
-    catalog : OrderedDict[str,Tuple[int,int]] = OrderedDict()
-
-    # using the words in inputA, add 1 the Tuple's first position to indicate an occurance of a word
-    for word in gather_words(inputA) :
-        # Tuples cannot be updated so, geting and setting is the approach taken
-        tupe : Tuple[int,int] = catalog.get(word) or (0,0)
-        # increment tuple representing the current word in inputA
-        catalog[word] = tupe[0]+1,0
-    
-    # using the words in inputB, add 1 the Tuple's second position to indicate an occurance of a word
-    for word in gather_words(inputB) :
-        # Tuples cannot be updated so, geting and setting is the approach taken
-        tupe : Tuple[int,int] = catalog.get(word) or (0,0)
-        # increment tuple representing the current word in inputB
-        catalog[word] = tupe[0],tupe[1]+1
-
-    # ~~~~~~~~~~~~~~~~~~ this is the true "cosine similarity" where vectors are compared vs words ~~~~~~~~~~~~~~~~~~ #
-
-    # https://en.wikipedia.org/wiki/Dot_product
-    # dot_prod = (v1[0] * v2[0]) + (v1[1] * v2[1]) * ..... (v1[n] * v2[n])
-    dot_product : float = 0
-
-    # https://en.wikipedia.org/wiki/Magnitude_(mathematics)
-    # magnitued is a number's distance from 0
-    magnitude_of_a : float = 0
-    magnitude_of_b : float = 0
-
-    # items() returns an enumerable vs a list. If iterated as a list, each item is [key,Tuple] not Tuple (IMPORTANT)
-    for word,vectors in  catalog.items() :
-        dot_product += vectors[0] * vectors[1]
-        magnitude_of_a += math.pow(vectors[0], 2) 
-        magnitude_of_b += math.pow(vectors[1], 2)
-
-    cos_sim : float = dot_product / (math.sqrt(magnitude_of_a) * math.sqrt(magnitude_of_b))
-    return round(cos_sim,2)
