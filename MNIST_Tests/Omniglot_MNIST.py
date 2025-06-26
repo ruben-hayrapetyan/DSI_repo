@@ -7,7 +7,7 @@ transform = transforms.Compose([
     transforms.ToTensor(),  
 ])
 
-train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
+train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=False)
 train_loader = DataLoader(dataset=train_dataset, batch_size=64, shuffle=True)
 
 transform = transforms.Compose([
@@ -15,7 +15,7 @@ transform = transforms.Compose([
     transforms.ToTensor(),
 ])
 
-omniglot_dataset = datasets.Omniglot(root='./data', background=True, download=True, transform=transform)
+omniglot_dataset = datasets.Omniglot(root='./data', background=True, download=False, transform=transform)
 all_labels = [label for _, label in omniglot_dataset]
 unique_labels = sorted(list(set(all_labels)))
 label_map = {orig_label: new_label for new_label, orig_label in enumerate(unique_labels[:10])}
