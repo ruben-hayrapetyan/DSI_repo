@@ -2,40 +2,40 @@ import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, Subset
 import gc
+import os
+from PIL import Image
 
 transform = transforms.Compose([
     transforms.ToTensor(),  
 ])
 
-train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=False)
+train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
 train_loader = DataLoader(dataset=train_dataset, batch_size=64, shuffle=True)
 
+def clean_data(root_dir):
+    num_removed = 0
+    for class_dir in os.listdir(root_dir):
+        class_path = os.path.join(root_dir, class_dir)
+        if not os.path.isdir(class_path):
+            continue
+        for filename in os.listdir(class_path):
+            file_path = os.path.join(class_path, filename)
+            try:
+                with Image.open(file_path) as img:
+                    img.verify()
+            except (IOError, SyntaxError):
+                os.remove(file_path)
+                num_removed += 1
+
+clean_data('omniglot_images/Angelic')
+
 transform = transforms.Compose([
+    transforms.Grayscale(),
     transforms.Resize((28, 28)),
-    transforms.ToTensor(),
+    transforms.ToTensor()
 ])
 
-omniglot_dataset = datasets.Omniglot(root='./data', background=True, download=False, transform=transform)
-all_labels = [label for _, label in omniglot_dataset]
-unique_labels = sorted(list(set(all_labels)))
-label_map = {orig_label: new_label for new_label, orig_label in enumerate(unique_labels[:10])}
-
-subset_indices = [i for i, (_, label) in enumerate(omniglot_dataset) if label in label_map]
-
-class NewOmniglot(torch.utils.data.Dataset):
-    def __init__(self, original_dataset, indices, label_map):
-        self.dataset = original_dataset
-        self.indices = indices
-        self.label_map = label_map
-
-    def __getitem__(self, idx):
-        img, label = self.dataset[self.indices[idx]]
-        return img, self.label_map[label]
-
-    def __len__(self):
-        return len(self.indices)
-
-test_dataset = NewOmniglot(omniglot_dataset, subset_indices, label_map)
+test_dataset = datasets.ImageFolder(root='omniglot_images/Angelic', transform=transform)
 test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
 import torch

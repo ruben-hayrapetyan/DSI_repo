@@ -33,18 +33,18 @@ class DatasetArabicMNIST(Dataset):
 
         return image, label
 
-images_df = pd.read_csv("csvTestImages 3360x1024.csv", header=None)
-labels_df = pd.read_csv("csvTestLabel 3360x1.csv", header=None)
+images_df = pd.read_csv("data/csvTestImages 3360x1024.csv", header=None)
+labels_df = pd.read_csv("data/csvTestLabel 3360x1.csv", header=None)
 combined_df = pd.concat([labels_df, images_df], axis=1)
 combined_df = combined_df[combined_df.iloc[:, 0].isin(range(10))]
-combined_df.to_csv("arabic_mnist_test_combined.csv", index=False)
+combined_df.to_csv("data/arabic_mnist_test_combined.csv", index=False)
 
 transform = transforms.Compose([
     transforms.Resize((28, 28)),
     transforms.ToTensor()
 ])
 
-test_dataset  = DatasetArabicMNIST("arabic_mnist_test_combined.csv", transform=transform)
+test_dataset  = DatasetArabicMNIST("data/arabic_mnist_test_combined.csv", transform=transform)
 test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
 
 import torch
