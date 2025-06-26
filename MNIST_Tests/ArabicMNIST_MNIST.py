@@ -1,0 +1,131 @@
+import torch
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader, Dataset
+import gc
+from PIL import Image
+import pandas as pd
+import numpy as np
+
+transform = transforms.Compose([
+    transforms.ToTensor(),  
+])
+
+train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
+train_loader = DataLoader(dataset=train_dataset, batch_size=64, shuffle=True)
+
+class DatasetArabicMNIST(Dataset):
+    def __init__(self, file_path, transform=None, image_shape=(32, 32)):
+        self.data = pd.read_csv(file_path)
+        self.transform = transform
+        self.image_shape = image_shape
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        label = int(self.data.iloc[index, 0])
+        image = self.data.iloc[index, 1:].values.astype(np.uint8).reshape(self.image_shape)
+
+        image = Image.fromarray(image, mode='L')
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label
+
+images_df = pd.read_csv("data/csvTestImages 3360x1024.csv", header=None)
+labels_df = pd.read_csv("data/csvTestLabel 3360x1.csv", header=None)
+combined_df = pd.concat([labels_df, images_df], axis=1)
+combined_df = combined_df[combined_df.iloc[:, 0].isin(range(10))]
+combined_df.to_csv("data/arabic_mnist_test_combined.csv", index=False)
+
+transform = transforms.Compose([
+    transforms.Resize((28, 28)),
+    transforms.ToTensor()
+])
+
+test_dataset  = DatasetArabicMNIST("data/arabic_mnist_test_combined.csv", transform=transform)
+test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
+
+class mnist(nn.Module):
+    def __init__(self):
+        super(mnist, self).__init__()
+        self.conv1 = nn.Conv2d(1,6, kernel_size=5, stride=1, padding=2)
+        self.tanh1 = nn.Tanh()
+        self.pool1 = nn.AvgPool2d(kernel_size=2,  stride=2)
+        self.conv2 = nn.Conv2d(6, 16, kernel_size=5, stride=1)
+        self.tanh2 = nn.Tanh()
+        self.pool2 = nn.AvgPool2d(kernel_size=2, stride=2)
+        self.conv3 = nn.Conv2d(16, 120, kernel_size=5, stride=1)
+        self.tanh3 = nn.Tanh()
+        self.fc1 = nn.Linear(120, 84)
+        self.tanh4 = nn.Tanh()
+        self.fc2 = nn.Linear(84, 10)
+
+    def forward(self, x):
+        x = self.pool1(self.tanh1(self.conv1(x)))
+        x = self.pool2(self.tanh2(self.conv2(x)))
+        x = self.tanh3(self.conv3(x))
+        x = x.view(-1, 120)  # Flatten the tensor
+        x = self.tanh4(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+model = mnist()
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+gc.collect()
+
+epochs = 10
+train_losses = []
+train_accuracies = []
+test_losses = []
+test_accuracies = []
+for epoch in range(epochs):
+    model.train()
+    running_loss = 0.0
+    correct = 0
+    total = 0
+
+    for inputs, labels in train_loader:
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item() * inputs.size(0)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+    print(f'Epoch [{epoch + 1}/10]')
+    print("Training loss", (running_loss / total))  
+    train_losses.append(running_loss / total)
+    print("Training accuracy", (correct *100/ total),'%')
+    train_accuracies.append(correct * 100 / total)
+    gc.collect()
+
+
+    model.eval()
+    running_loss_eval = 0.0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            running_loss_eval += loss.item() * inputs.size(0)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+    print("Testing loss", (running_loss / total))
+    test_losses.append(running_loss_eval / total)
+    print("Testing accuracy", (correct*100 / total),'%')
+    test_accuracies.append(correct * 100 / total)
+    gc.collect()
