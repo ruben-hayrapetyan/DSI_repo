@@ -29,5 +29,3 @@ print("updated with mnist")
 fid.update(cifar_tensor, is_real=False)
 print("updated with cifar")
 print("FID: ", fid.compute())
-
-
