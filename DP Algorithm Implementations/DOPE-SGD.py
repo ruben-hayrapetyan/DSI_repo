@@ -15,12 +15,12 @@ train_loader_public = DataLoader(dataset=train_dataset_public, batch_size=64, sh
 train_loader_private = DataLoader(dataset=train_dataset_private, batch_size=64, shuffle=True)
 test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
 
-def DOPESGD(D, n, D_s, n_s, lr, sigma, C, l, T):
+def DOPESGD(model, D_loader, D_s_loader, lr, sigma, C, l, T):
     """
     Parameters:
-        D: private training data
+        D_loader: private training data loader
         n: private batch size
-        D_s: public training data
+        D_s_loader: public training data loader
         n_s: public batch size
         lr (float): learning rate
         sigma (float): noise scale
@@ -28,10 +28,29 @@ def DOPESGD(D, n, D_s, n_s, lr, sigma, C, l, T):
         l: loss function
         T (int): number of training iterations
     Returns:
-        theta: parameters
+        theta: trained model parameters
     """
     
     #initiate theta randomly
+    optim = torch.optim.SGD(model.parameters(), lr)
+
+    for epoch in range(T):
+
+        model.train()
+        total_loss = 0
+        pub_iter = iter(D_s_loader)
+
+        for priv_inputs, priv_labels in D_loader:
+            
+            pub_inputs, pub_labels = next(pub_iter)
+            optim.zero_grad()
+            pub_out = model(pub_inputs)
+            pub_loss = l(pub_out, pub_labels)
+            pub_loss.backward()
+
+
+
+
 
     #for t in T
         #B_t is the sample of n instances from D
