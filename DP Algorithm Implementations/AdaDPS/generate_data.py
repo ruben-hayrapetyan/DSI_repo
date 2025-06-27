@@ -7,8 +7,10 @@ def generate_mnist():
     from sklearn.datasets import fetch_openml
     mnist = fetch_openml('mnist_784', cache=True)
     print(mnist.data.shape)
-    mnist.target = mnist.target.astype(np.int8)
+    mnist.target = mnist.target.values.astype(np.int64)
+    mnist.data = mnist.data.values.astype(np.float32)
     mnist.data = mnist.data / 255 # scale to [0,1]
+    mnist.data = mnist.data.reshape(-1, 1, 28, 28)
     train_x, train_y = mnist.data[:60000], mnist.target[:60000]
     test_x, test_y = mnist.data[60000:], mnist.target[60000:]
     return (train_x, train_y), (test_x, test_y)

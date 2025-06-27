@@ -25,14 +25,14 @@ class Trainer(BaseTrainer):
 
         total_step = len(self.train_loader)
 
-        if self.scale_by == 'tfidf':
+        """if self.scale_by == 'tfidf':
             freq = self.get_tf_idf_value()
             multiplier = freq * 10
             multiplier[:3] = 0.01
         elif self.scale_by == 'freq':
             freq = self.get_bow_frequency()
             multiplier = np.minimum(self.multiplier_cap, np.divide(max(freq), freq + 1e-20)) / self.division
-        multiplier = torch.FloatTensor(multiplier).cuda()
+        multiplier = torch.FloatTensor(multiplier).cuda()"""
 
         for epoch in range(self.epochs):
 
@@ -68,10 +68,10 @@ class Trainer(BaseTrainer):
 
                     j.backward(retain_graph=True)
 
-                    if self.scale:
+                    """if self.scale:
                         for p_name, p in self.model.named_parameters():
                             if p_name == 'weight':
-                                p.grad = p.grad * multiplier
+                                p.grad = p.grad * multiplier"""
 
                     if self.use_public:
                         for p_name, p in self.model.named_parameters():

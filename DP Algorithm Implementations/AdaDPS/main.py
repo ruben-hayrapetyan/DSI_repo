@@ -28,10 +28,8 @@ def read_options():
     parser.add_argument('--batch_size',
                         type=int,
                         default=8)
-    parser.add_argument('--iters',
-                        type=int,
-                        default=2250)
-    parser.add_argument('--eval_every_iter',
+    parser.add_argument('--epochs',
+                        help='number of epochs',
                         type=int,
                         default=50)
     parser.add_argument('--seed',
@@ -66,6 +64,25 @@ def read_options():
                         help='the eps value in adaptive methods',
                         type=float,
                         default=1e-10)
+    parser.add_argument('--public_bs',
+                        help='batch size for public data loader',
+                        type=int,
+                        default=64)
+    parser.add_argument('--scale_by',
+                        help='scaling method for adadps (e.g., tfidf, freq)',
+                        type=str,
+                        default='None')
+    parser.add_argument('--use_public',
+                        help='whether use public data to estimate E[g^2]',
+                        type=int,
+                        default=0)
+    parser.add_argument('--eval_every_epoch',
+                        type=int,
+                        default=1)
+    parser.add_argument('--num_microbatches',
+                        help='how many microbatches in one mini-batch, only for dp methods',
+                        type=int,
+                        default=10)
 
     try: parsed = vars(parser.parse_args())
     except IOError as msg: parser.error(str(msg))
@@ -82,9 +99,8 @@ def main():
 
     options, trainer = read_options()
 
-    dataset = generate_toy()
-    print('shape', dataset[0].shape)
-
+    #dataset = generate_toy()
+    #print('shape', dataset[0].shape)
 
     t = trainer(options)
     t.train()
