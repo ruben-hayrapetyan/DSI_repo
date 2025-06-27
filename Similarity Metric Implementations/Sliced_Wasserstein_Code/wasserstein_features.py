@@ -5,7 +5,7 @@ from torchvision.datasets import CIFAR10, MNIST
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from sliced_wasserstein import sliced_wasserstein_distance
 class CNN(nn.Module):
     def __init__(self):
         super().__init__()
@@ -52,4 +52,4 @@ print("extracted mnist features")
 cifar_features = feature_extractor(cifar_loader)
 print("extracted cifar features")
 
-print("Wasserstein distance: ", wasserstein_distance_nd(mnist_features, cifar_features))
+print("Wasserstein distance: ", sliced_wasserstein_distance(mnist_features, cifar_features))

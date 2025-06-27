@@ -1,5 +1,6 @@
 import numpy as np
-from scipy.stats import wasserstein_distance_nd
+# from scipy.stats import wasserstein_distance_nd
+from sliced_wasserstein import sliced_wasserstein_distance
 from torchvision.datasets import CIFAR10, MNIST
 import torch
 import torch.nn.functional as F
@@ -21,4 +22,4 @@ mnist_tensor = mnist_tensor.repeat(1, 3, 1, 1)  # (50000, 3, 32, 32)
 data_np_mnist = mnist_tensor.detach().cpu().numpy()
 data_np_mnist = data_np_mnist.reshape(50000, -1)
 
-print("Wasserstein Distance:", wasserstein_distance_nd(data_np_mnist, data_np_cifar))
+print("Wasserstein Distance:", sliced_wasserstein_distance(data_np_mnist, data_np_cifar))
