@@ -31,23 +31,37 @@ def DOPESGD(model, D_loader, D_s_loader, lr, sigma, C, l, T):
         theta: trained model parameters
     """
     
-    #initiate theta randomly
     optim = torch.optim.SGD(model.parameters(), lr)
 
     for epoch in range(T):
 
         model.train()
-        total_loss = 0
         pub_iter = iter(D_s_loader)
 
         for priv_inputs, priv_labels in D_loader:
             
-            pub_inputs, pub_labels = next(pub_iter)
+            try:
+                pub_inputs, pub_labels = next(public_iter)
+            except StopIteration:
+                public_iter = iter(pub_iter)
+                pub_inputs, pub_labels = next(public_iter)
+            
             optim.zero_grad()
             pub_out = model(pub_inputs)
             pub_loss = l(pub_out, pub_labels)
             pub_loss.backward()
+            pub_grad = []
+            for p in model.parameters():
+                pub_grad.append(p.grad.detach().clone())
+            pub_grad = [g.clone() for g in pub_grad]
 
+            grads = [torch.zeros_like(p) for p in model.parameters()]
+
+            for x, y in (priv_inputs, priv_labels):
+                optim.zero_grad()
+                output = model(x.unsqueeze(0))
+                loss = l(output, y.unsqueeze(0))
+                loss.backward()
 
 
 
