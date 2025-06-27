@@ -26,7 +26,7 @@ def clean_data(root_dir):
             except (IOError, SyntaxError):
                 os.remove(file_path)
                 num_removed += 1
-clean_data('notMNIST_small')
+clean_data('MNIST_Tests/notMNIST_small')
 
 transform = transforms.Compose([
     transforms.Grayscale(),
@@ -34,7 +34,7 @@ transform = transforms.Compose([
     transforms.ToTensor()
 ])
 
-mnist_m = datasets.ImageFolder(root='notMNIST_small', transform=transform)
+mnist_m = datasets.ImageFolder(root='MNIST_Tests/notMNIST_small', transform=transform)
 train_dataset_2, test_dataset = torch.utils.data.random_split(mnist_m, [len(mnist_m) - int(0.1 * len(mnist_m)), int(0.1 * len(mnist_m))])
 train_loader_2  = DataLoader(dataset=train_dataset_2, batch_size=1000, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
