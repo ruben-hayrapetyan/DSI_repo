@@ -167,11 +167,11 @@ if __name__ == '__main__':
                         default="resnet152",
                         help="model")
     parser.add_argument("--private_dataset",
-                        choices=["chestxray","ham","cifar100","kagchest","kagskin","mnist","cifar10"],
+                        choices=["chestxray","ham","cifar100","kagchest","kagskin","mnist","cifar10", "fashionmnist", "svhn", "stl10", "usps"],
                         default="mnist",
                         help="Which downstream task.")
     parser.add_argument("--public_dataset",
-                        choices=["chestxray","kagchest","ham","cifar100","kagskin","mnist","cifar10"],
+                        choices=["chestxray","kagchest","ham","cifar100","kagskin","mnist","cifar10", "fashionmnist", "svhn", "stl10", "usps"],
                         default="cifar10",
                         help="Which downstream task.")
     parser.add_argument("--use_pretrain", default=False,
