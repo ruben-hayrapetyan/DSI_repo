@@ -84,6 +84,9 @@ def setup_model(args):
         num_classes = 10
     elif args.private_dataset == "cifar10" or args.public_dataset == "cifar10":
         num_classes = 10
+    elif args.private_dataset in ["fashionmnist", "svhn", "stl10"] or \
+         args.public_dataset in ["usps"]:
+        num_classes = 10
 
     if args.model_type == "wideresnet":
         model = models.wide_resnet101_2(pretrained=True)

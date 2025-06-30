@@ -780,6 +780,69 @@ def get_data_loader(args):
             download=True,
             transform=tf
         )
+    # Add to private_loader section
+    elif args.private_dataset == "fashionmnist":
+        tf = transforms.Compose([
+            transforms.Resize(224),
+            transforms.Grayscale(num_output_channels=3),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                std=[0.229, 0.224, 0.225])
+        ])
+        private_dataset = datasets.FashionMNIST(
+            root='./data',
+            train=True,
+            download=True,
+            transform=tf
+        )
+        private_dataset = Subset(private_dataset, dataset_slice)
+
+    elif args.private_dataset == "svhn":
+        tf = transforms.Compose([
+            transforms.Resize(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                std=[0.229, 0.224, 0.225])
+        ])
+        private_dataset = datasets.SVHN(
+            root='./data',
+            split='train',
+            download=True,
+            transform=tf
+        )
+        private_dataset = Subset(private_dataset, dataset_slice)
+
+    elif args.private_dataset == "stl10":
+        tf = transforms.Compose([
+            transforms.Resize(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                std=[0.229, 0.224, 0.225])
+        ])
+        private_dataset = datasets.STL10(
+            root='./data',
+            split='train',
+            download=True,
+            transform=tf
+        )
+        private_dataset = Subset(private_dataset, dataset_slice)
+
+    # Add to public_loader section
+    elif args.public_dataset == "usps":
+        tf = transforms.Compose([
+            transforms.Resize(224),
+            transforms.Grayscale(num_output_channels=3),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                std=[0.229, 0.224, 0.225])
+        ])
+        public_set = datasets.USPS(
+            root='./data',
+            train=False,  # Using test split
+            download=True,
+            transform=tf
+        )
+        public_set = Subset(public_set, dataset_slice)
 
     public_loader = DataLoader(public_set, batch_size=args.eval_batch_size, shuffle=False,
                                num_workers=8)
