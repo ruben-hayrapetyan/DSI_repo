@@ -11,13 +11,11 @@ def DOPESGD(model, D_loader, D_s_loader, lr, sigma, C, l, T):
         n: private batch size
         D_s_loader: public training data loader
         n_s: public batch size
-        lr (float): learning rate
-        sigma (float): noise scale
+        lr: learning rate
+        sigma: noise scale
         C: gradient norm clip
         l: loss function
-        T (int): number of training iterations
-    Returns:
-        theta: trained model parameters
+        T: number of training iterations
     """
     
     optim = torch.optim.SGD(model.parameters(), lr)
