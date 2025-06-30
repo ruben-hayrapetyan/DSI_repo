@@ -76,7 +76,7 @@ def DOPESGD(model, D_loader, D_s_loader, lr, sigma, C, l, T):
         
         epoch_loss = total_loss / total
         epoch_accuracy = 100 * correct / total
-        print(f"Epoch [{epoch+1}/{T}] ... Loss: {epoch_loss:.4f} ... Accuracy: {epoch_accuracy:.2f}%")
+        print(f"Epoch [{epoch+1}/{T}] ... Loss: {epoch_loss:.4f} ... Training Accuracy: {epoch_accuracy:.2f}%")
 
 transform = transforms.Compose([
     transforms.ToTensor(),  
