@@ -3,9 +3,9 @@ python3 main.py \
 --scale 1 \
 --use_public 1 \
 --batch_size 100 \
---epochs 10 \
---sigma 0.7 \
+--epochs 50 \
+--sigma 0.5 \
 --clipping_bound 0.5 \
 --lr 0.01 \
 --dataset USPS \
---public_bs 64
+--public_bs 100

@@ -64,6 +64,7 @@ class Trainer(BaseTrainer):
                     saved_var[p_name] = torch.zeros_like(p)
 
                 for j in losses:  # for every micro-batch in the mini-batch
+
                     self.model.zero_grad()
 
                     j.backward(retain_graph=True)
@@ -86,6 +87,7 @@ class Trainer(BaseTrainer):
 
 
                 for p_name, p in self.model.named_parameters():
+
                     if self.device.type == 'cuda':
                         noise = torch.cuda.FloatTensor(p.grad.shape).normal_(0, self.sigma * self.clipping_bound)
                     else:

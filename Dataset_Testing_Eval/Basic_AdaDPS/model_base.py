@@ -63,8 +63,13 @@ class BaseTrainer(object):
         train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
         train_size_public = int(0.04 * len(train_dataset))
         train_public_subset = Subset(train_dataset, range(train_size_public))
-        train_loader_public = DataLoader(dataset=train_public_subset, batch_size=64, shuffle=True)
-        self.public_loader = train_loader_public
+        the_train_loader_public = DataLoader(dataset=train_public_subset, batch_size=self.public_bs, shuffle=True)
+        self.public_loader = the_train_loader_public
+
+        (train_x_full, train_y_full), (x_test, y_test) = generate_mnist()
+        x_public, y_public = train_x_full[:train_size_public], train_y_full[:train_size_public]
+        self.public_x = torch.FloatTensor(x_public)
+        self.public_y = torch.LongTensor(y_public)
 
         if self.dataset == "USPS":
             transform = transforms.Compose([
@@ -74,7 +79,7 @@ class BaseTrainer(object):
             train_dataset_2  = datasets.USPS(root='./data', train=True, transform=transform, download=True)
             train_size_private = int(0.96 * len(train_dataset_2))
             train_private_subset = Subset(train_dataset_2, range(train_size_private))
-            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=64, shuffle=False)
+            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=self.batch_size, shuffle=False)
             test_dataset  = datasets.USPS(root='./data', train=False, transform=transform, download=True)
             test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
             self.train_loader = train_loader_private
@@ -87,7 +92,7 @@ class BaseTrainer(object):
             train_dataset_2  = datasets.FashionMNIST(root='./data', train=True, transform=transform, download=True)
             train_size_private = int(0.96 * len(train_dataset_2))
             train_private_subset = Subset(train_dataset_2, range(train_size_private))
-            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=64, shuffle=False)
+            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=self.batch_size, shuffle=False)
             test_dataset  = datasets.FashionMNIST(root='./data', train=False, transform=transform, download=True)
             test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
             self.train_loader = train_loader_private
@@ -101,7 +106,7 @@ class BaseTrainer(object):
             train_dataset_2  = datasets.SVHN(root='./data', split='train', transform=transform, download=True)
             train_size_private = int(0.96 * len(train_dataset_2))
             train_private_subset = Subset(train_dataset_2, range(train_size_private))
-            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=64, shuffle=False)
+            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=self.batch_size, shuffle=False)
             test_dataset  = datasets.SVHN(root='./data', split='test', transform=transform, download=True)
             test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
             self.train_loader = train_loader_private
@@ -115,7 +120,7 @@ class BaseTrainer(object):
             train_dataset_2  = datasets.CIFAR10(root='./data', train=True, transform=transform, download=True)
             train_size_private = int(0.96 * len(train_dataset_2))
             train_private_subset = Subset(train_dataset_2, range(train_size_private))
-            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=64, shuffle=False)
+            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=self.batch_size, shuffle=False)
             test_dataset  = datasets.CIFAR10(root='./data', train=False, transform=transform, download=True)
             test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
             self.train_loader = train_loader_private
@@ -129,7 +134,7 @@ class BaseTrainer(object):
             train_dataset_2  = datasets.STL10(root='./data', split='train', transform=transform, download=True)
             train_size_private = int(0.96 * len(train_dataset_2))
             train_private_subset = Subset(train_dataset_2, range(train_size_private))
-            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=64, shuffle=False)
+            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=self.batch_size, shuffle=False)
             test_dataset  = datasets.STL10(root='./data', split='test', transform=transform, download=True)
             test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
             self.train_loader = train_loader_private
@@ -146,7 +151,7 @@ class BaseTrainer(object):
         self.model.to(self.device)
 
     def estimate_preconditioner(self):
-
+        
         tmp_mean = dict()
         for p_name, p in self.model.named_parameters():
             self.preconditioner[p_name] = torch.zeros_like(p)
@@ -174,6 +179,7 @@ class BaseTrainer(object):
 
 
     def get_pub_gradient(self):
+        
         pub_g = dict()
 
         for p_name, p in self.model.named_parameters():
@@ -221,6 +227,7 @@ class BaseTrainer(object):
         return tf_idf + 1e-10
 
     def get_loss_and_gradients(self, input, labels):
+
         predicted = self.model(input)
         l = self.loss(predicted, labels)
         self.optimizer.zero_grad()
@@ -231,11 +238,13 @@ class BaseTrainer(object):
         return l.item(), g
 
     def apply_gradients(self, grads):
+
         for i, x in enumerate(self.model.parameters()):
             x.grad.data = grads[i]
         self.optimizer.step()
 
     def get_gradient_norm(self):
+
         total_norm = 0
         for p in self.model.parameters():
             total_norm += p.grad.norm(2).item() ** 2
@@ -243,6 +252,7 @@ class BaseTrainer(object):
         return total_norm
 
     def get_weight_norm(self):
+
         total_norm = 0
 
         for p in self.model.parameters():
@@ -252,6 +262,7 @@ class BaseTrainer(object):
         return total_norm
 
     def get_test_accuracy(self):
+
         self.model.eval()
         with torch.no_grad():
             correct = 0
@@ -266,6 +277,7 @@ class BaseTrainer(object):
         return correct * 1.0 / total
 
     def get_train_accuracy_and_loss(self):
+
         self.model.eval()
         with torch.no_grad():  # not training
             correct = 0
