@@ -118,6 +118,51 @@ class BaseTrainer(object):
             test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
             self.train_loader = train_loader_private
             self.test_loader = test_loader
+        if self.private_dataset == "QMNIST":
+            transform = transforms.Compose([
+                transforms.Resize((28, 28)),
+                transforms.ToTensor(),
+                transforms.Grayscale()
+            ])
+            train_dataset_2  = datasets.QMNIST(root='./data', train = True, transform=transform, download=True)
+            train_size_private = int(0.96 * len(train_dataset_2))
+            train_private_subset = Subset(train_dataset_2, range(train_size_private))
+            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=64, shuffle=False)
+            test_dataset  = datasets.QMNIST(root='./data', train = False, transform=transform, download=True)
+            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
+            self.train_loader = train_loader_private
+            self.test_loader = test_loader
+        if self.private_dataset == "KMNIST":
+            transform = transforms.Compose([
+                transforms.Resize((28, 28)),
+                transforms.ToTensor(),
+                transforms.Grayscale()
+            ])
+            train_dataset_2  = datasets.KMNIST(root='./data', train = True, transform=transform, download=True)
+            train_size_private = int(0.96 * len(train_dataset_2))
+            train_private_subset = Subset(train_dataset_2, range(train_size_private))
+            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=64, shuffle=False)
+            test_dataset  = datasets.KMNIST(root='./data', train = False, transform=transform, download=True)
+            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
+            self.train_loader = train_loader_private
+            self.test_loader = test_loader
+        if self.private_dataset == "SEMEION":
+            transform = transforms.Compose([
+                transforms.Resize((28, 28)),
+                transforms.ToTensor(),
+                transforms.Grayscale()
+            ])
+            #80% train, 20% test
+            #96% of train is considered private
+            full_dataset_2  = datasets.SEMEION(root='./data', transform=transform, download=True)
+            train_dataset_2 = Subset(full_dataset_2, range(int(0.8 * len(full_dataset_2))))
+            train_size_private = int(0.96 * len(train_dataset_2))
+            train_private_subset = Subset(train_dataset_2, range(train_size_private))
+            train_loader_private  = DataLoader(dataset=train_private_subset, batch_size=64, shuffle=False)
+            test_dataset  = Subset(full_dataset_2, range(int(0.8 * len(full_dataset_2)), len(full_dataset_2)))
+            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
+            self.train_loader = train_loader_private
+            self.test_loader = test_loader
         
         # #train_data = np.load('data/imdb_10000d_train.npz')
         # #test_data = np.load('data/imdb_10000d_test.npz')
