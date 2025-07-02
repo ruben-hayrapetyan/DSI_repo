@@ -1,0 +1,11 @@
+python3 main.py \
+--method dp-sgd \
+--scale 1 \
+--use_public 1 \
+--batch_size 100 \
+--epochs 20 \
+--sigma 0.5 \
+--clipping_bound 0.5 \
+--lr 0.01 \
+--dataset KMNIST \
+--public_bs 100
