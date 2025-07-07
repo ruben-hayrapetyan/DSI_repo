@@ -131,8 +131,6 @@ print("Sliced Wasserstein Distance between CIFAR10 and MNIST:",
 
 
 
-
-
 # HELLINGER DISTANCE
 print("\n"*5)
 print("HELLINGER DISTANCE")
