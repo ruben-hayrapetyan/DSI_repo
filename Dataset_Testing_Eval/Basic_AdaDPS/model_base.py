@@ -78,7 +78,7 @@ class BaseTrainer(object):
             ])
 
             mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
+            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
 
             transform = transforms.Compose([
                 transforms.Resize((28, 28)),
@@ -86,10 +86,10 @@ class BaseTrainer(object):
             ])
 
             usps_dataset  = datasets.USPS(root='./data', train=True, transform=transform, download=True)
-            usps_loader  = DataLoader(dataset=usps_dataset, batch_size=1000, shuffle=False)
+            # usps_loader  = DataLoader(dataset=usps_dataset, batch_size=1000, shuffle=False)
 
-            max_mnist_contribution = len(mnist_dataset) 
-            max_usps_contribution = len(usps_dataset) 
+            # max_mnist_contribution = len(mnist_dataset) 
+            # max_usps_contribution = len(usps_dataset) 
             total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
             total_if_usps_maxed = int(len(usps_dataset) / 0.96)
             total_desired_size = min(total_if_mnist_maxed, total_if_usps_maxed)
@@ -115,7 +115,7 @@ class BaseTrainer(object):
             ])
 
             mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
+            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
 
             transform = transforms.Compose([
                 transforms.Resize((28, 28)),
@@ -123,10 +123,10 @@ class BaseTrainer(object):
             ])
 
             mnist2_dataset  = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist2_loader  = DataLoader(dataset=mnist2_dataset, batch_size=1000, shuffle=False)
+            # mnist2_loader  = DataLoader(dataset=mnist2_dataset, batch_size=1000, shuffle=False)
 
-            max_mnist_contribution = len(mnist_dataset) 
-            max_mnist2_contribution = len(mnist2_dataset) 
+            # max_mnist_contribution = len(mnist_dataset) 
+            # max_mnist2_contribution = len(mnist2_dataset) 
             total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
             total_if_mnist2_maxed = int(len(mnist2_dataset) / 0.96)
             total_desired_size = min(total_if_mnist_maxed, total_if_mnist2_maxed)
@@ -152,7 +152,7 @@ class BaseTrainer(object):
             ])
 
             mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
+            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
 
             transform = transforms.Compose([
                 transforms.Grayscale(num_output_channels=1), 
@@ -162,10 +162,10 @@ class BaseTrainer(object):
 
 
             fm_dataset  = datasets.FashionMNIST(root='./data', train=True, transform=transform, download=True)
-            fm_loader  = DataLoader(dataset=fm_dataset, batch_size=1000, shuffle=False)
+            # fm_loader  = DataLoader(dataset=fm_dataset, batch_size=1000, shuffle=False)
 
-            max_mnist_contribution = len(mnist_dataset) 
-            max_fm_contribution = len(fm_dataset) 
+            # max_mnist_contribution = len(mnist_dataset) 
+            # max_fm_contribution = len(fm_dataset) 
             total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
             total_if_fm_maxed = int(len(fm_dataset) / 0.96)
             total_desired_size = min(total_if_mnist_maxed, total_if_fm_maxed)
@@ -200,10 +200,10 @@ class BaseTrainer(object):
             ])
 
             svhn_dataset  = datasets.SVHN(root='./data', split="train", transform=transform, download=True)
-            svhn_loader  = DataLoader(dataset=svhn_dataset, batch_size=1000, shuffle=False)
+            # svhn_loader  = DataLoader(dataset=svhn_dataset, batch_size=1000, shuffle=False)
 
-            max_mnist_contribution = len(mnist_dataset) 
-            max_svhn_contribution = len(svhn_dataset) 
+            # max_mnist_contribution = len(mnist_dataset) 
+            # max_svhn_contribution = len(svhn_dataset) 
             total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
             total_if_svhn_maxed = int(len(svhn_dataset) / 0.96)
             total_desired_size = min(total_if_mnist_maxed, total_if_svhn_maxed)
@@ -229,7 +229,7 @@ class BaseTrainer(object):
             ])
 
             mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
+            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
 
             transform = transforms.Compose([
                 transforms.Grayscale(num_output_channels=1), 
@@ -239,10 +239,10 @@ class BaseTrainer(object):
 
 
             CIFAR_dataset  = datasets.CIFAR10(root='./data', train=True, transform=transform, download=True)
-            CIFAR_loader  = DataLoader(dataset=CIFAR_dataset, batch_size=1000, shuffle=False)
+            # CIFAR_loader  = DataLoader(dataset=CIFAR_dataset, batch_size=1000, shuffle=False)
 
-            max_mnist_contribution = len(mnist_dataset) 
-            max_CIFAR_contribution = len(CIFAR_dataset) 
+            # max_mnist_contribution = len(mnist_dataset) 
+            # max_CIFAR_contribution = len(CIFAR_dataset) 
             total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
             total_if_CIFAR_maxed = int(len(CIFAR_dataset) / 0.96)
             total_desired_size = min(total_if_mnist_maxed, total_if_CIFAR_maxed)
@@ -268,7 +268,7 @@ class BaseTrainer(object):
             ])
 
             mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
+            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
 
             transform = transforms.Compose([
                 transforms.Resize((28, 28)),
@@ -277,10 +277,10 @@ class BaseTrainer(object):
             ])
 
             stl_dataset  = datasets.STL10(root='./data', split="train", transform=transform, download=True)
-            stl_loader  = DataLoader(dataset=stl_dataset, batch_size=1000, shuffle=False)
+            # stl_loader  = DataLoader(dataset=stl_dataset, batch_size=1000, shuffle=False)
 
-            max_mnist_contribution = len(mnist_dataset) 
-            max_stl_contribution = len(stl_dataset) 
+            # max_mnist_contribution = len(mnist_dataset) 
+            # max_stl_contribution = len(stl_dataset) 
             total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
             total_if_stl_maxed = int(len(stl_dataset) / 0.96)
             total_desired_size = min(total_if_mnist_maxed, total_if_stl_maxed)
@@ -306,7 +306,7 @@ class BaseTrainer(object):
             ])
 
             mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
+            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
 
             transform = transforms.Compose([
                 transforms.Grayscale(num_output_channels=1), 
@@ -316,10 +316,10 @@ class BaseTrainer(object):
 
 
             qmnist_dataset  = datasets.QMNIST(root='./data', train=True, transform=transform, download=True)
-            qmnist_loader  = DataLoader(dataset=qmnist_dataset, batch_size=1000, shuffle=False)
+            # qmnist_loader  = DataLoader(dataset=qmnist_dataset, batch_size=1000, shuffle=False)
 
-            max_mnist_contribution = len(mnist_dataset) 
-            max_qmnist_contribution = len(qmnist_dataset) 
+            # max_mnist_contribution = len(mnist_dataset) 
+            # max_qmnist_contribution = len(qmnist_dataset) 
             total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
             total_if_qmnist_maxed = int(len(qmnist_dataset) / 0.96)
             total_desired_size = min(total_if_mnist_maxed, total_if_qmnist_maxed)
@@ -345,7 +345,7 @@ class BaseTrainer(object):
             ])
 
             mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
+            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
 
             transform = transforms.Compose([
                 transforms.Grayscale(num_output_channels=1), 
@@ -355,10 +355,10 @@ class BaseTrainer(object):
 
 
             kmnist_dataset  = datasets.KMNIST(root='./data', train=True, transform=transform, download=True)
-            kmnist_loader  = DataLoader(dataset=kmnist_dataset, batch_size=1000, shuffle=False)
+            # kmnist_loader  = DataLoader(dataset=kmnist_dataset, batch_size=1000, shuffle=False)
 
-            max_mnist_contribution = len(mnist_dataset) 
-            max_kmnist_contribution = len(kmnist_dataset) 
+            # max_mnist_contribution = len(mnist_dataset) 
+            # max_kmnist_contribution = len(kmnist_dataset) 
             total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
             total_if_kmnist_maxed = int(len(kmnist_dataset) / 0.96)
             total_desired_size = min(total_if_mnist_maxed, total_if_kmnist_maxed)
@@ -384,7 +384,7 @@ class BaseTrainer(object):
             ])
 
             mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
+            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
 
             transform = transforms.Compose([
                 transforms.Grayscale(num_output_channels=1), 
@@ -395,8 +395,8 @@ class BaseTrainer(object):
             full_dataset_2  = datasets.SEMEION(root='./data', transform=transform, download=True)
             train_dataset_2 = Subset(full_dataset_2, range(int(0.8 * len(full_dataset_2))))
 
-            max_mnist_contribution = len(mnist_dataset) 
-            max_semeion_contribution = len(train_dataset_2) 
+            # max_mnist_contribution = len(mnist_dataset) 
+            # max_semeion_contribution = len(train_dataset_2) 
             total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
             total_if_semeion_maxed = int(len(train_dataset_2) / 0.96)
             total_desired_size = min(total_if_mnist_maxed, total_if_semeion_maxed)

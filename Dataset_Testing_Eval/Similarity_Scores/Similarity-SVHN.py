@@ -352,8 +352,8 @@ def update_fid_safe(fid, data_tensor, is_real, batch_size=32):
         fid.update(batch, is_real=is_real)
 
 svhn_tensor = torch.from_numpy(svhn_data).float()
-# if len(svhn_tensor.shape) == 4:  # (N, H, W, C) -> (N, C, H, W)
-#     svhn_tensor = svhn_tensor.permute(0, 3, 1, 2)
+if len(svhn_tensor.shape) == 4:  # (N, H, W, C) -> (N, C, H, W)
+    svhn_tensor = svhn_tensor.permute(0, 3, 1, 2)
 
 mnist_tensor = torch.from_numpy(mnist_data).unsqueeze(1).float()
 
