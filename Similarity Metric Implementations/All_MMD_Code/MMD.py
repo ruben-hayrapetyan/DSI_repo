@@ -38,7 +38,7 @@ data_np_mnist = data_np_mnist[:, None, :, :]
 mnist_tensor = torch.from_numpy(data_np_mnist)
 mnist_tensor = F.interpolate(mnist_tensor, size=(32, 32), mode='bilinear', align_corners=False)
 mnist_tensor = mnist_tensor.repeat(1, 3, 1, 1)
-data_np_mnist = mnist_tensor[:50000].numpy()
+data_np_mnist = mnist_tensor[:5000].cpu().numpy()
 
 # plt.imshow(
 #     np.stack(
@@ -49,7 +49,8 @@ data_np_mnist = mnist_tensor[:50000].numpy()
 
 # We can visualise a heatmap of the MMDs for samples from different digits. 
 mmd = MaximumMeanDiscrepancy(kernel=GaussianKernel(1e-3))
-mmd_gaus = mmd.compute(data_np_cifar, data_np_mnist)
+data_np_mnist_flat = data_np_mnist.reshape((data_np_mnist.shape[0], -1))
+mmd_gaus = mmd.compute(data_np_mnist_flat, data_np_mnist_flat)
 print(f"MMD between CIFAR-10 and MNIST: {mmd_gaus}")
 
 # mnist_mmd_gauss = np.zeros((10, 10))

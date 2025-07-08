@@ -62,6 +62,7 @@ prob_datasets = {}
 avg_datasets = {}
 
 for name, data in datasets.items():
+    print(f"\nProcessing {name}...")
     prob_datasets[name] = to_prob_dist(data)
     avg_datasets[name] = prob_datasets[name].mean(axis=0)
 
