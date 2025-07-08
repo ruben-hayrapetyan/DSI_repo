@@ -11,9 +11,9 @@ import gc
 
 # === Load datasets ===
 imdb = load_dataset("imdb")
-amazon = {
-    "train": load_dataset("amazon_polarity", split="train").shuffle(seed=42).select(range(50000)),
-    "test": load_dataset("amazon_polarity", split="test").shuffle(seed=42).select(range(10000))
+sst2 = {
+    "train": load_dataset("sst2", split="train").shuffle(seed=42).select(range(50000)),
+    "test": load_dataset("sst2", split="test").shuffle(seed=42).select(range(10000))
 }
 # === Preprocessing ===
 def clean_text(text):
@@ -70,8 +70,8 @@ def collate_batch(batch):
 
 # === Dataloaders ===
 train_loader_imdb = DataLoader(TextDataset(imdb["train"], lambda x: x), batch_size=64, shuffle=True, collate_fn=collate_batch)
-train_loader_amazon = DataLoader(TextDataset(amazon["train"], lambda x: x), batch_size=256, shuffle=True, collate_fn=collate_batch)
-test_loader_amazon = DataLoader(TextDataset(amazon["test"], lambda x: x), batch_size=256, shuffle=False, collate_fn=collate_batch)
+train_loader_sst2 = DataLoader(TextDataset(sst2["train"], lambda x: x), batch_size=256, shuffle=True, collate_fn=collate_batch)
+test_loader_sst2 = DataLoader(TextDataset(sst2["test"], lambda x: x), batch_size=256, shuffle=False, collate_fn=collate_batch)
 
 # === Model ===
 class TextClassifier(nn.Module):
@@ -109,15 +109,15 @@ for epoch in range(10):
     print(f"[Epoch {epoch+1}/10] Loss: {total_loss/total:.4f}, Accuracy: {100*correct/total:.2f}%")
     gc.collect()
 
-# === Adapt to Amazon ===
-print("Adapting model for Amazon...")
+# === Adapt to sst2 ===
+print("Adapting model for sst2...")
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-# === Train on Amazon ===
+# === Train on sst2 ===
 for epoch in range(3):
     model.train()
     total_loss, correct, total = 0.0, 0, 0
-    for x, y in train_loader_amazon:
+    for x, y in train_loader_sst2:
         x, y = x.to(device), y.to(device)
         optimizer.zero_grad()
         out = model(x)
@@ -134,7 +134,7 @@ for epoch in range(3):
 model.eval()
 total_loss, correct, total = 0.0, 0, 0
 with torch.no_grad():
-    for x, y in test_loader_amazon:
+    for x, y in test_loader_sst2:
         x, y = x.to(device), y.to(device)
         out = model(x)
         loss = criterion(out, y)
