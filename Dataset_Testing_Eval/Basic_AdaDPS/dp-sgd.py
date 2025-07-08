@@ -11,7 +11,7 @@ class Trainer(BaseTrainer):
 
     def __init__(self, params):
         super(Trainer, self).__init__(params)
-        self.delta = 1.0 / 25000
+        self.delta = 0.00001
         self.mean = dict()
         self.preconditioner = dict()
         self.beta = 0.9

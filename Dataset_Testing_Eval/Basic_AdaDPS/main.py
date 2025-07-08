@@ -43,7 +43,7 @@ def read_options():
     parser.add_argument('--delta',
                         help='delta in the privacy parameters',
                         type=float,
-                        default=1e-3)
+                        default=0.00001)
     parser.add_argument('--clipping_bound',
                         help='max l2 norm of the gradient norm',
                         type=float,
@@ -63,7 +63,7 @@ def read_options():
     parser.add_argument('--epsilon',
                         help='the eps value in adaptive methods',
                         type=float,
-                        default=1e-10)
+                        default=3)
     parser.add_argument('--public_bs',
                         help='batch size for public data loader',
                         type=int,

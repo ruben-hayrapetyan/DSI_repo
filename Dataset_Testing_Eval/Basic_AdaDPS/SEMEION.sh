@@ -4,7 +4,7 @@ python3 main.py \
 --use_public 1 \
 --batch_size 100 \
 --epochs 10 \
---sigma 0.5 \
+--sigma 1 \
 --clipping_bound 0.5 \
 --lr 0.01 \
 --dataset SEMEION \

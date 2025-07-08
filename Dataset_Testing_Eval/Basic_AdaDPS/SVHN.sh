@@ -5,7 +5,7 @@ python3 main.py \
 --batch_size 100 \
 --epochs 10 \
 --sigma 0.5 \
---clipping_bound 0.5 \
+--clipping_bound 0.75 \
 --lr 0.01 \
 --dataset SVHN \
 --public_bs 100

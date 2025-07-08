@@ -4,8 +4,8 @@ python3 main.py \
 --use_public 1 \
 --batch_size 100 \
 --epochs 15 \
---sigma 0.5 \
---clipping_bound 0.5 \
+--sigma 0.75 \
+--clipping_bound 0.75 \
 --lr 0.01 \
 --dataset CIFAR10 \
 --public_bs 100

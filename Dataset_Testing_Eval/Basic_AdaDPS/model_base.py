@@ -109,6 +109,43 @@ class BaseTrainer(object):
             self.public_loader = train_loader_public
             self.train_loader = train_loader_private
             self.test_loader = test_loader 
+        if self.dataset == "MNIST":
+            transform = transforms.Compose([
+                transforms.ToTensor(),  
+            ])
+
+            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
+            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
+
+            transform = transforms.Compose([
+                transforms.Resize((28, 28)),
+                transforms.ToTensor(),
+            ])
+
+            mnist2_dataset  = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
+            mnist2_loader  = DataLoader(dataset=mnist2_dataset, batch_size=1000, shuffle=False)
+
+            max_mnist_contribution = len(mnist_dataset) 
+            max_mnist2_contribution = len(mnist2_dataset) 
+            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
+            total_if_mnist2_maxed = int(len(mnist2_dataset) / 0.96)
+            total_desired_size = min(total_if_mnist_maxed, total_if_mnist2_maxed)
+            mnist_size = int(0.04 * total_desired_size)
+            mnist2_size = int(0.96 * total_desired_size)
+            np.random.seed(42)
+            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
+            mnist2_indices = np.random.choice(len(mnist2_dataset), size=mnist2_size, replace=False)
+            mnist_subset = Subset(mnist_dataset, mnist_indices)
+            mnist2_subset = Subset(mnist2_dataset, mnist2_indices)
+            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
+            train_loader_private = DataLoader(dataset=mnist2_subset, batch_size=self.batch_size, shuffle=True)
+
+
+            test_dataset  = datasets.MNIST(root='./data', train=False, transform=transform, download=True)
+            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
+            self.public_loader = train_loader_public
+            self.train_loader = train_loader_private
+            self.test_loader = test_loader 
         if self.dataset == "FashionMNIST":
             transform = transforms.Compose([
                 transforms.ToTensor(),  
