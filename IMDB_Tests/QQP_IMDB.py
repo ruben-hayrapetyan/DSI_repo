@@ -12,9 +12,10 @@ import gc
 # === Load datasets ===
 imdb = load_dataset("imdb")
 qqp = {
-    "train": load_dataset("qqp", split="train").shuffle(seed=42).select(range(50000)),
-    "test": load_dataset("qqp", split="test").shuffle(seed=42).select(range(10000))
+    "train": load_dataset("SetFit/qqp", split="train").shuffle(seed=42).select(range(50000)),
+    "test": load_dataset("SetFit/qqp", split="validation")
 }
+
 # === Preprocessing ===
 def clean_text(text):
     text = text.lower()
@@ -48,9 +49,10 @@ def text_pipeline(text, max_len=256):
 
 # === Dataset Wrappers ===
 class TextDataset(Dataset):
-    def __init__(self, hf_dataset, label_transform, max_len=256):
+    def __init__(self, hf_dataset, label_transform, text_fields, max_len=256):
         self.data = hf_dataset
         self.label_transform = label_transform
+        self.text_fields = text_fields
         self.max_len = max_len
 
     def __len__(self):
@@ -58,8 +60,8 @@ class TextDataset(Dataset):
 
     def __getitem__(self, idx):
         item = self.data[idx]
-        text_field = item["text"] if "text" in item else item["content"]
-        tokens = text_pipeline(text_field, max_len=self.max_len)
+        text = " ".join([item[field] for field in self.text_fields if field in item])
+        tokens = text_pipeline(text, max_len=self.max_len)
         label = torch.tensor(self.label_transform(item["label"]), dtype=torch.long)
         return tokens, label
 
@@ -69,9 +71,9 @@ def collate_batch(batch):
     return padded, torch.stack(labels)
 
 # === Dataloaders ===
-train_loader_imdb = DataLoader(TextDataset(imdb["train"], lambda x: x), batch_size=64, shuffle=True, collate_fn=collate_batch)
-train_loader_qqp = DataLoader(TextDataset(qqp["train"], lambda x: x), batch_size=256, shuffle=True, collate_fn=collate_batch)
-test_loader_qqp = DataLoader(TextDataset(qqp["test"], lambda x: x), batch_size=256, shuffle=False, collate_fn=collate_batch)
+train_loader_imdb = DataLoader(TextDataset(imdb["train"], lambda x: x, text_fields=["text"]), batch_size=64, shuffle=True, collate_fn=collate_batch)
+train_loader_qqp = DataLoader(TextDataset(qqp["train"], lambda x: x, text_fields=["text1", "text2"]), batch_size=256, shuffle=True, collate_fn=collate_batch)
+test_loader_qqp = DataLoader(TextDataset(qqp["test"], lambda x: x, text_fields=["text1", "text2"]), batch_size=256, shuffle=False, collate_fn=collate_batch)
 
 # === Model ===
 class TextClassifier(nn.Module):
