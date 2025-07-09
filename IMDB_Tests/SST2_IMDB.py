@@ -12,8 +12,8 @@ import gc
 # === Load datasets ===
 imdb = load_dataset("imdb")
 sst2 = {
-    "train": load_dataset("sst2", split="train").shuffle(seed=42).select(range(50000)),
-    "test": load_dataset("sst2", split="test").shuffle(seed=42).select(range(10000))
+    "train": load_dataset("SetFit/sst2", split="train"),
+    "test": load_dataset("SetFit/sst2", split="test")
 }
 # === Preprocessing ===
 def clean_text(text):

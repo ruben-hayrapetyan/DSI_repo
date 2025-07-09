@@ -13,7 +13,7 @@ import gc
 imdb = load_dataset("imdb")
 amazon = {
     "train": load_dataset("amazon_polarity", split="train").shuffle(seed=42).select(range(50000)),
-    "test": load_dataset("amazon_polarity", split="test").shuffle(seed=42).select(range(10000))
+    "test": load_dataset("amazon_polarity", split="test").shuffle(seed=42).select(range(50000))
 }
 # === Preprocessing ===
 def clean_text(text):

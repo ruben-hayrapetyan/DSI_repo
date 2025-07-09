@@ -11,11 +11,10 @@ import gc
 
 # === Load datasets ===
 imdb = load_dataset("imdb")
-wnli = {
-    "train": load_dataset("SetFit/wnli", split="train"),
-    "test": load_dataset("SetFit/wnli", split="validation")
+s140 = {
+    "train": load_dataset("contemmcm/sentiment140", split="complete[:50000]"),
+    "test": load_dataset("contemmcm/sentiment140", split="complete[50000:60000]")
 }
-
 # === Preprocessing ===
 def clean_text(text):
     text = text.lower()
@@ -49,10 +48,9 @@ def text_pipeline(text, max_len=256):
 
 # === Dataset Wrappers ===
 class TextDataset(Dataset):
-    def __init__(self, hf_dataset, label_transform, text_fields, max_len=256):
+    def __init__(self, hf_dataset, label_transform, max_len=256):
         self.data = hf_dataset
         self.label_transform = label_transform
-        self.text_fields = text_fields
         self.max_len = max_len
 
     def __len__(self):
@@ -60,8 +58,8 @@ class TextDataset(Dataset):
 
     def __getitem__(self, idx):
         item = self.data[idx]
-        text = " ".join([item[field] for field in self.text_fields if field in item])
-        tokens = text_pipeline(text, max_len=self.max_len)
+        text_field = item["text"] if "text" in item else item["content"]
+        tokens = text_pipeline(text_field, max_len=self.max_len)
         label = torch.tensor(self.label_transform(item["label"]), dtype=torch.long)
         return tokens, label
 
@@ -71,9 +69,9 @@ def collate_batch(batch):
     return padded, torch.stack(labels)
 
 # === Dataloaders ===
-train_loader_imdb = DataLoader(TextDataset(imdb["train"], lambda x: x, text_fields=["text"]), batch_size=64, shuffle=True, collate_fn=collate_batch)
-train_loader_wnli = DataLoader(TextDataset(wnli["train"], lambda x: x, text_fields=["text1", "text2"]), batch_size=256, shuffle=True, collate_fn=collate_batch)
-test_loader_wnli = DataLoader(TextDataset(wnli["test"], lambda x: x, text_fields=["text1", "text2"]), batch_size=256, shuffle=False, collate_fn=collate_batch)
+train_loader_imdb = DataLoader(TextDataset(imdb["train"], lambda x: x), batch_size=64, shuffle=True, collate_fn=collate_batch)
+train_loader_s140 = DataLoader(TextDataset(s140["train"], lambda x: x), batch_size=256, shuffle=True, collate_fn=collate_batch)
+test_loader_s140 = DataLoader(TextDataset(s140["test"], lambda x: x), batch_size=256, shuffle=False, collate_fn=collate_batch)
 
 # === Model ===
 class TextClassifier(nn.Module):
@@ -111,15 +109,15 @@ for epoch in range(10):
     print(f"[Epoch {epoch+1}/10] Loss: {total_loss/total:.4f}, Accuracy: {100*correct/total:.2f}%")
     gc.collect()
 
-# === Adapt to wnli ===
-print("Adapting model for wnli...")
+# === Adapt to s140 ===
+print("Adapting model for s140...")
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-# === Train on wnli ===
+# === Train on s140 ===
 for epoch in range(3):
     model.train()
     total_loss, correct, total = 0.0, 0, 0
-    for x, y in train_loader_wnli:
+    for x, y in train_loader_s140:
         x, y = x.to(device), y.to(device)
         optimizer.zero_grad()
         out = model(x)
@@ -136,7 +134,7 @@ for epoch in range(3):
 model.eval()
 total_loss, correct, total = 0.0, 0, 0
 with torch.no_grad():
-    for x, y in test_loader_wnli:
+    for x, y in test_loader_s140:
         x, y = x.to(device), y.to(device)
         out = model(x)
         loss = criterion(out, y)
