@@ -32,7 +32,11 @@ for example in imdb["train"]:
     counter.update(tokenize(example["text"]))
 
 # Only keep words with min_freq ≥ 5
+min_freq = 5
 vocab = {"<pad>": 0, "<unk>": 1}
+for word, freq in counter.items():
+    if freq >= min_freq:
+        vocab[word] = len(vocab)
 inv_vocab = {v: k for k, v in vocab.items()}
 PAD_IDX = vocab["<pad>"]
 UNK_IDX = vocab["<unk>"]
