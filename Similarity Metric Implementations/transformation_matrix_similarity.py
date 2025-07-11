@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import torchvision.models as models
+from torchvision.models import ResNet18_Weights
 
 transform = transforms.Compose([
     transforms.Resize((32, 32)),            
@@ -102,8 +103,36 @@ class Encoder(nn.Module):
     def forward(self, x):
         x = self.resnet(x)
         return x"""
+
+resnet = models.resnet18(weights=ResNet18_Weights.DEFAULT)
+class PartialResNet(nn.Module):
+    def __init__(self, base_model):
+        super(PartialResNet, self).__init__()
+        self.stem = nn.Sequential(
+            base_model.conv1,
+            base_model.bn1,
+            base_model.relu,
+            base_model.maxpool,
+        )
+        self.layer1 = base_model.layer1
+        # self.layer2 = base_model.layer2
+        # self.layer3 = base_model.layer3 
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1)) 
+        self.flatten = nn.Flatten()  
+
+    def forward(self, x):
+        x = self.stem(x)
+        x = self.layer1(x)
+        # x = self.layer2(x)
+        # x = self.layer3(x)
+        x = self.avgpool(x)
+        x = self.flatten(x)
+        return x
+# encoder = PartialResNet(resnet).eval()
+
     
 encoder = Encoder(128).to(device)
+
 encoder.eval()
 
 mnist_in = torch.from_numpy(data_np_mnist).to(device)
@@ -121,6 +150,7 @@ semeion_in = torch.from_numpy(data_np_semeion[:50000]).to(device)
 
 with torch.no_grad():
     mnist_rep = encoder(mnist_in)
+    # mnist_rep = mnist_rep.flatten(start_dim=1)
     mnist_for_usps_rep = encoder(mnist_for_usps_in)
     mnist_for_stl10_rep = encoder(mnist_for_stl10_in)
     mnist_for_semeion_rep = encoder(mnist_for_semeion_in)
