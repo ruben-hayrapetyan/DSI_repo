@@ -47,22 +47,20 @@ class BaseTrainer(object):
 
 
         def text_pipeline(text, max_len=256):
-           tokens = tokenize(text)
-           ids = [vocab.get(token, UNK_IDX) for token in tokens[:max_len]]
-           return torch.tensor(ids, dtype=torch.long)
+            tokens = tokenize(text)[:max_len]
+            bow_vector = torch.zeros(len(vocab), dtype=torch.float)
+            for token in tokens:
+                idx = vocab.get(token, UNK_IDX)
+                bow_vector[idx] += 1
+            return bow_vector
 
         class Model(nn.Module):
-           def __init__(self, vocab_size, embed_dim=100, hidden_dim=128, num_classes=2):
-               super().__init__()
-               self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=PAD_IDX)
-               self.lstm = nn.LSTM(embed_dim, hidden_dim, batch_first=True)
-               self.fc = nn.Linear(hidden_dim, num_classes)
+            def __init__(self, vocab_size, num_classes=2):
+                super().__init__()
+                self.fc = nn.Linear(vocab_size, num_classes)
 
-
-           def forward(self, x):
-               x = self.embedding(x)
-               _, (h_n, _) = self.lstm(x)
-               return self.fc(h_n[-1])
+            def forward(self, x):
+                return self.fc(x)
            
         class TextDataset(Dataset):
             def __init__(self, hf_dataset, label_transform, text_field, max_len=256):
@@ -82,42 +80,83 @@ class BaseTrainer(object):
 
         def collate_batch(batch):
             texts, labels = zip(*batch)
-            padded = pad_sequence(texts, batch_first=True, padding_value=PAD_IDX)
-            return padded, torch.stack(labels)
+            return torch.stack(texts), torch.stack(labels)
 
         if (self.dataset == "CornellMovie"):
-            cornellmovie = load_dataset("cornell-movie-review-data/rotten_tomatoes")
-
-            max_imdb_contribution = len(imdb["train"])
-            max_cornellmovie_contribution = len(cornellmovie["train"])
+            data = load_dataset("cornell-movie-review-data/rotten_tomatoes")
 
             total_if_imdb_maxed = int(len(imdb["train"]) / 0.04)
-            total_if_cornellmovie_maxed = int(len(cornellmovie["train"]) / 0.96)
-            total_desired_size = min(total_if_imdb_maxed, total_if_cornellmovie_maxed)
+            total_if_data_maxed = int(len(data["train"]) / 0.96)
+            total_desired_size = min(total_if_imdb_maxed, total_if_data_maxed)
             imdb_size = int(0.04 * total_desired_size)
-            cornellmovie_size = int(0.96 * total_desired_size)
+            data_size = int(0.96 * total_desired_size)
 
             np.random.seed(42)
             imdb_indices = np.random.choice(len(imdb["train"]), size=imdb_size, replace=False)
-            cornellmovie_indices = np.random.choice(len(cornellmovie["train"]), size=cornellmovie_size, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=data_size, replace=False)
 
             imdb_subset = imdb["train"].select(imdb_indices)
-            cornellmovie_subset = cornellmovie["train"].select(cornellmovie_indices)
+            data_subset = data["train"].select(data_indices)
+        if self.dataset == "EnronSpam":
+            data = load_dataset("SetFit/enron_spam")
 
-            self.public_loader = DataLoader(
-                TextDataset(imdb_subset, label_transform=lambda x: x, text_field="text"),
-                batch_size=64, shuffle=True, collate_fn=collate_batch
-            )
+            total_if_imdb_maxed = int(len(imdb["train"]) / 0.04)
+            total_if_data_maxed = int(len(data["train"]) / 0.96)
+            total_desired_size = min(total_if_imdb_maxed, total_if_data_maxed)
+            imdb_size = int(0.04 * total_desired_size)
+            data_size = int(0.96 * total_desired_size)
 
-            self.train_loader = DataLoader(
-                TextDataset(cornellmovie_subset, label_transform=lambda x: x, text_field="text"),
-                batch_size=64, shuffle=True, collate_fn=collate_batch
-            )
+            np.random.seed(42)
+            imdb_indices = np.random.choice(len(imdb["train"]), size=imdb_size, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=data_size, replace=False)
 
-            self.test_loader = DataLoader(
-                TextDataset(cornellmovie["test"], label_transform=lambda x: x, text_field="text"),
-                batch_size=64, shuffle=False, collate_fn=collate_batch
-            )
+            imdb_subset = imdb["train"].select(imdb_indices)
+            data_subset = data["train"].select(data_indices)
+        if self.dataset == "Sentiment140":
+            data = load_dataset("adilbekovich/Sentiment140Twitter")
+
+            total_if_imdb_maxed = int(len(imdb["train"]) / 0.04)
+            total_if_data_maxed = int(len(data["train"]) / 0.96)
+            total_desired_size = min(total_if_imdb_maxed, total_if_data_maxed)
+            imdb_size = int(0.04 * total_desired_size)
+            data_size = int(0.96 * total_desired_size)
+
+            np.random.seed(42)
+            imdb_indices = np.random.choice(len(imdb["train"]), size=imdb_size, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=data_size, replace=False)
+
+            imdb_subset = imdb["train"].select(imdb_indices)
+            data_subset = data["train"].select(data_indices)
+        if self.dataset == "SST2":
+            data = load_dataset("SetFit/sst2")
+
+            total_if_imdb_maxed = int(len(imdb["train"]) / 0.04)
+            total_if_data_maxed = int(len(data["train"]) / 0.96)
+            total_desired_size = min(total_if_imdb_maxed, total_if_data_maxed)
+            imdb_size = int(0.04 * total_desired_size)
+            data_size = int(0.96 * total_desired_size)
+
+            np.random.seed(42)
+            imdb_indices = np.random.choice(len(imdb["train"]), size=imdb_size, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=data_size, replace=False)
+
+            imdb_subset = imdb["train"].select(imdb_indices)
+            data_subset = data["train"].select(data_indices)
+
+        self.public_loader = DataLoader(
+            TextDataset(imdb_subset, label_transform=lambda x: x, text_field="text"),
+            batch_size=64, shuffle=True, collate_fn=collate_batch
+        )
+
+        self.train_loader = DataLoader(
+            TextDataset(data_subset, label_transform=lambda x: x, text_field="text"),
+            batch_size=64, shuffle=True, collate_fn=collate_batch
+        )
+
+        self.test_loader = DataLoader(
+            TextDataset(data["test"], label_transform=lambda x: x, text_field="text"),
+            batch_size=64, shuffle=False, collate_fn=collate_batch
+        )
         
         # #train_data = np.load('data/imdb_10000d_train.npz')
         # #test_data = np.load('data/imdb_10000d_test.npz')
