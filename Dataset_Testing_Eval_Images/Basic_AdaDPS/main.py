@@ -82,7 +82,7 @@ def read_options():
     parser.add_argument('--num_microbatches',
                         help='how many microbatches in one mini-batch, only for dp methods',
                         type=int,
-                        default=10)
+                        default=8)
 
     try: parsed = vars(parser.parse_args())
     except IOError as msg: parser.error(str(msg))

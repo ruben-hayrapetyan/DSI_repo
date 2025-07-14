@@ -2,10 +2,10 @@ python3 main.py \
 --method dp-sgd \
 --scale 1 \
 --use_public 1 \
---batch_size 100 \
---epochs 20 \
---sigma 1 \
---clipping_bound 1 \
+--batch_size 64 \
+--epochs 16 \
+--sigma 0.64 \
+--clipping_bound 1.0 \
 --lr 0.01 \
 --dataset FashionMNIST \
---public_bs 100
+--public_bs 64

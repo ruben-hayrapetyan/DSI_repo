@@ -65,356 +65,70 @@ class BaseTrainer(object):
             transforms.ToTensor(),  
         ])
 
-        train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-        train_size_public = int(0.04 * len(train_dataset))
-        (train_x_full, train_y_full), (x_test, y_test) = generate_mnist()
-        x_public, y_public = train_x_full[:train_size_public], train_y_full[:train_size_public]
-        self.public_x = torch.FloatTensor(x_public)
-        self.public_y = torch.LongTensor(y_public)
+        mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
+        self.train_loader = DataLoader(dataset=mnist_dataset, batch_size=64, shuffle=True)
+
+        mnist_test_dataset = datasets.MNIST(root='./data', train=False, transform=transform, download=True)
+        self.test_loader = DataLoader(dataset=mnist_test_dataset, batch_size=1000, shuffle=False)
+        
+        transform = transforms.Compose([
+            transforms.Grayscale(num_output_channels=1), 
+            transforms.Resize((28, 28)),               
+            transforms.ToTensor(),                       
+        ])
+
 
         if self.dataset == "USPS":
-            transform = transforms.Compose([
-                transforms.ToTensor(),  
-            ])
-
-            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
-
-            transform = transforms.Compose([
-                transforms.Resize((28, 28)),
-                transforms.ToTensor(),
-            ])
-
-            usps_dataset  = datasets.USPS(root='./data', train=True, transform=transform, download=True)
-            # usps_loader  = DataLoader(dataset=usps_dataset, batch_size=1000, shuffle=False)
-
-            # max_mnist_contribution = len(mnist_dataset) 
-            # max_usps_contribution = len(usps_dataset) 
-            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
-            total_if_usps_maxed = int(len(usps_dataset) / 0.96)
-            total_desired_size = min(total_if_mnist_maxed, total_if_usps_maxed)
-            mnist_size = int(0.04 * total_desired_size)
-            usps_size = int(0.96 * total_desired_size)
+            pub_dataset = datasets.USPS(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
-            usps_indices = np.random.choice(len(usps_dataset), size=usps_size, replace=False)
-            mnist_subset = Subset(mnist_dataset, mnist_indices)
-            usps_subset = Subset(usps_dataset, usps_indices)
-            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
-            train_loader_private = DataLoader(dataset=usps_subset, batch_size=self.batch_size, shuffle=True)
-
-
-            test_dataset  = datasets.USPS(root='./data', train=False, transform=transform, download=True)
-            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
-            self.public_loader = train_loader_public
-            self.train_loader = train_loader_private
-            self.test_loader = test_loader 
+            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            public_subset = Subset(pub_dataset, indices)
+            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "MNIST":
-            transform = transforms.Compose([
-                transforms.ToTensor(),  
-            ])
-
-            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
-
-            transform = transforms.Compose([
-                transforms.Resize((28, 28)),
-                transforms.ToTensor(),
-            ])
-
-            mnist2_dataset  = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            # mnist2_loader  = DataLoader(dataset=mnist2_dataset, batch_size=1000, shuffle=False)
-
-            # max_mnist_contribution = len(mnist_dataset) 
-            # max_mnist2_contribution = len(mnist2_dataset) 
-            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
-            total_if_mnist2_maxed = int(len(mnist2_dataset) / 0.96)
-            total_desired_size = min(total_if_mnist_maxed, total_if_mnist2_maxed)
-            mnist_size = int(0.04 * total_desired_size)
-            mnist2_size = int(0.96 * total_desired_size)
+            pub_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
-            mnist2_indices = np.random.choice(len(mnist2_dataset), size=mnist2_size, replace=False)
-            mnist_subset = Subset(mnist_dataset, mnist_indices)
-            mnist2_subset = Subset(mnist2_dataset, mnist2_indices)
-            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
-            train_loader_private = DataLoader(dataset=mnist2_subset, batch_size=self.batch_size, shuffle=True)
-
-
-            test_dataset  = datasets.MNIST(root='./data', train=False, transform=transform, download=True)
-            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
-            self.public_loader = train_loader_public
-            self.train_loader = train_loader_private
-            self.test_loader = test_loader 
+            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            public_subset = Subset(pub_dataset, indices)
+            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "FashionMNIST":
-            transform = transforms.Compose([
-                transforms.ToTensor(),  
-            ])
-
-            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
-
-            transform = transforms.Compose([
-                transforms.Grayscale(num_output_channels=1), 
-                transforms.Resize((28, 28)),               
-                transforms.ToTensor(),                       
-            ])
-
-
-            fm_dataset  = datasets.FashionMNIST(root='./data', train=True, transform=transform, download=True)
-            # fm_loader  = DataLoader(dataset=fm_dataset, batch_size=1000, shuffle=False)
-
-            # max_mnist_contribution = len(mnist_dataset) 
-            # max_fm_contribution = len(fm_dataset) 
-            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
-            total_if_fm_maxed = int(len(fm_dataset) / 0.96)
-            total_desired_size = min(total_if_mnist_maxed, total_if_fm_maxed)
-            mnist_size = int(0.04 * total_desired_size)
-            fm_size = int(0.96 * total_desired_size)
+            pub_dataset = datasets.FashionMNIST(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
-            fm_indices = np.random.choice(len(fm_dataset), size=fm_size, replace=False)
-            mnist_subset = Subset(mnist_dataset, mnist_indices)
-            fm_subset = Subset(fm_dataset, fm_indices)
-            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
-            train_loader_private = DataLoader(dataset=fm_subset, batch_size=self.batch_size, shuffle=True)
-
-
-            test_dataset  = datasets.FashionMNIST(root='./data', train=False, transform=transform, download=True)
-            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
-            self.public_loader = train_loader_public
-            self.train_loader = train_loader_private
-            self.test_loader = test_loader
+            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            public_subset = Subset(pub_dataset, indices)
+            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "SVHN":
-            transform = transforms.Compose([
-                transforms.ToTensor(),  
-            ])
-
-            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
-
-            transform = transforms.Compose([
-                transforms.Resize((28, 28)),
-                transforms.ToTensor(),
-                transforms.Grayscale(),
-            ])
-
-            svhn_dataset  = datasets.SVHN(root='./data', split="train", transform=transform, download=True)
-            # svhn_loader  = DataLoader(dataset=svhn_dataset, batch_size=1000, shuffle=False)
-
-            # max_mnist_contribution = len(mnist_dataset) 
-            # max_svhn_contribution = len(svhn_dataset) 
-            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
-            total_if_svhn_maxed = int(len(svhn_dataset) / 0.96)
-            total_desired_size = min(total_if_mnist_maxed, total_if_svhn_maxed)
-            mnist_size = int(0.04 * total_desired_size)
-            svhn_size = int(0.96 * total_desired_size)
+            pub_dataset = datasets.SVHN(root='./data', split='train', transform=transform, download=True)
             np.random.seed(42)
-            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
-            svhn_indices = np.random.choice(len(svhn_dataset), size=svhn_size, replace=False)
-            mnist_subset = Subset(mnist_dataset, mnist_indices)
-            svhn_subset = Subset(svhn_dataset, svhn_indices)
-            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
-            train_loader_private = DataLoader(dataset=svhn_subset, batch_size=self.batch_size, shuffle=True)
-
-
-            test_dataset  = datasets.SVHN(root='./data', split="test", transform=transform, download=True)
-            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
-            self.public_loader = train_loader_public
-            self.train_loader = train_loader_private
-            self.test_loader = test_loader
+            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            public_subset = Subset(pub_dataset, indices)
+            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "CIFAR10":
-            transform = transforms.Compose([
-                transforms.ToTensor(),  
-            ])
-
-            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
-
-            transform = transforms.Compose([
-                transforms.Grayscale(num_output_channels=1), 
-                transforms.Resize((28, 28)),               
-                transforms.ToTensor(),                       
-            ])
-
-
-            CIFAR_dataset  = datasets.CIFAR10(root='./data', train=True, transform=transform, download=True)
-            # CIFAR_loader  = DataLoader(dataset=CIFAR_dataset, batch_size=1000, shuffle=False)
-
-            # max_mnist_contribution = len(mnist_dataset) 
-            # max_CIFAR_contribution = len(CIFAR_dataset) 
-            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
-            total_if_CIFAR_maxed = int(len(CIFAR_dataset) / 0.96)
-            total_desired_size = min(total_if_mnist_maxed, total_if_CIFAR_maxed)
-            mnist_size = int(0.04 * total_desired_size)
-            CIFAR_size = int(0.96 * total_desired_size)
+            pub_dataset = datasets.CIFAR10(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
-            CIFAR_indices = np.random.choice(len(CIFAR_dataset), size=CIFAR_size, replace=False)
-            mnist_subset = Subset(mnist_dataset, mnist_indices)
-            CIFAR_subset = Subset(CIFAR_dataset, CIFAR_indices)
-            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
-            train_loader_private = DataLoader(dataset=CIFAR_subset, batch_size=self.batch_size, shuffle=True)
-
-
-            test_dataset  = datasets.CIFAR10(root='./data', train=False, transform=transform, download=True)
-            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
-            self.public_loader = train_loader_public
-            self.train_loader = train_loader_private
-            self.test_loader = test_loader 
+            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            public_subset = Subset(pub_dataset, indices)
+            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True) 
         if self.dataset == "STL10":
-            transform = transforms.Compose([
-                transforms.ToTensor(),  
-            ])
-
-            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
-
-            transform = transforms.Compose([
-                transforms.Resize((28, 28)),
-                transforms.ToTensor(),
-                transforms.Grayscale(),
-            ])
-
-            stl_dataset  = datasets.STL10(root='./data', split="train", transform=transform, download=True)
-            # stl_loader  = DataLoader(dataset=stl_dataset, batch_size=1000, shuffle=False)
-
-            # max_mnist_contribution = len(mnist_dataset) 
-            # max_stl_contribution = len(stl_dataset) 
-            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
-            total_if_stl_maxed = int(len(stl_dataset) / 0.96)
-            total_desired_size = min(total_if_mnist_maxed, total_if_stl_maxed)
-            mnist_size = int(0.04 * total_desired_size)
-            stl_size = int(0.96 * total_desired_size)
+            pub_dataset = datasets.STL10(root='./data', split='train', transform=transform, download=True)
             np.random.seed(42)
-            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
-            stl_indices = np.random.choice(len(stl_dataset), size=stl_size, replace=False)
-            mnist_subset = Subset(mnist_dataset, mnist_indices)
-            stl_subset = Subset(stl_dataset, stl_indices)
-            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
-            train_loader_private = DataLoader(dataset=stl_subset, batch_size=self.batch_size, shuffle=True)
-
-
-            test_dataset  = datasets.STL10(root='./data', split="test", transform=transform, download=True)
-            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
-            self.public_loader = train_loader_public
-            self.train_loader = train_loader_private
-            self.test_loader = test_loader
+            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            public_subset = Subset(pub_dataset, indices)
+            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "QMNIST":
-            transform = transforms.Compose([
-                transforms.ToTensor(),  
-            ])
-
-            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
-
-            transform = transforms.Compose([
-                transforms.Grayscale(num_output_channels=1), 
-                transforms.Resize((28, 28)),               
-                transforms.ToTensor(),                       
-            ])
-
-
-            qmnist_dataset  = datasets.QMNIST(root='./data', train=True, transform=transform, download=True)
-            # qmnist_loader  = DataLoader(dataset=qmnist_dataset, batch_size=1000, shuffle=False)
-
-            # max_mnist_contribution = len(mnist_dataset) 
-            # max_qmnist_contribution = len(qmnist_dataset) 
-            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
-            total_if_qmnist_maxed = int(len(qmnist_dataset) / 0.96)
-            total_desired_size = min(total_if_mnist_maxed, total_if_qmnist_maxed)
-            mnist_size = int(0.04 * total_desired_size)
-            qmnist_size = int(0.96 * total_desired_size)
+            pub_dataset = datasets.QMNIST(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
-            qmnist_indices = np.random.choice(len(qmnist_dataset), size=qmnist_size, replace=False)
-            mnist_subset = Subset(mnist_dataset, mnist_indices)
-            qmnist_subset = Subset(qmnist_dataset, qmnist_indices)
-            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
-            train_loader_private = DataLoader(dataset=qmnist_subset, batch_size=self.batch_size, shuffle=True)
-
-
-            test_dataset  = datasets.QMNIST(root='./data', train=False, transform=transform, download=True)
-            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
-            self.public_loader = train_loader_public
-            self.train_loader = train_loader_private
-            self.test_loader = test_loader
+            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            public_subset = Subset(pub_dataset, indices)
+            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "KMNIST":
-            transform = transforms.Compose([
-                transforms.ToTensor(),  
-            ])
-
-            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
-
-            transform = transforms.Compose([
-                transforms.Grayscale(num_output_channels=1), 
-                transforms.Resize((28, 28)),               
-                transforms.ToTensor(),                       
-            ])
-
-
-            kmnist_dataset  = datasets.KMNIST(root='./data', train=True, transform=transform, download=True)
-            # kmnist_loader  = DataLoader(dataset=kmnist_dataset, batch_size=1000, shuffle=False)
-
-            # max_mnist_contribution = len(mnist_dataset) 
-            # max_kmnist_contribution = len(kmnist_dataset) 
-            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
-            total_if_kmnist_maxed = int(len(kmnist_dataset) / 0.96)
-            total_desired_size = min(total_if_mnist_maxed, total_if_kmnist_maxed)
-            mnist_size = int(0.04 * total_desired_size)
-            kmnist_size = int(0.96 * total_desired_size)
+            pub_dataset = datasets.KMNIST(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
-            kmnist_indices = np.random.choice(len(kmnist_dataset), size=kmnist_size, replace=False)
-            mnist_subset = Subset(mnist_dataset, mnist_indices)
-            kmnist_subset = Subset(kmnist_dataset, kmnist_indices)
-            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
-            train_loader_private = DataLoader(dataset=kmnist_subset, batch_size=self.batch_size, shuffle=True)
-
-
-            test_dataset  = datasets.KMNIST(root='./data', train=False, transform=transform, download=True)
-            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
-            self.public_loader = train_loader_public
-            self.train_loader = train_loader_private
-            self.test_loader = test_loader
+            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            public_subset = Subset(pub_dataset, indices)
+            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "SEMEION":
-            transform = transforms.Compose([
-                transforms.ToTensor(),  
-            ])
-
-            mnist_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-            # mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=self.public_bs, shuffle=True)
-
-            transform = transforms.Compose([
-                transforms.Grayscale(num_output_channels=1), 
-                transforms.Resize((28, 28)),               
-                transforms.ToTensor(),                       
-            ])
-
-            full_dataset_2  = datasets.SEMEION(root='./data', transform=transform, download=True)
-            train_dataset_2 = Subset(full_dataset_2, range(int(0.8 * len(full_dataset_2))))
-
-            # max_mnist_contribution = len(mnist_dataset) 
-            # max_semeion_contribution = len(train_dataset_2) 
-            total_if_mnist_maxed = int(len(mnist_dataset) / 0.04)
-            total_if_semeion_maxed = int(len(train_dataset_2) / 0.96)
-            total_desired_size = min(total_if_mnist_maxed, total_if_semeion_maxed)
-            mnist_size = int(0.04 * total_desired_size)
-            semeion_size = int(0.96 * total_desired_size)
-            np.random.seed(42)
-            mnist_indices = np.random.choice(len(mnist_dataset), size=mnist_size, replace=False)
-            semeion_indices = np.random.choice(len(train_dataset_2), size=semeion_size, replace=False)
-            mnist_subset = Subset(mnist_dataset, mnist_indices)
-            semeion_subset = Subset(train_dataset_2, semeion_indices)
-            train_loader_public = DataLoader(dataset=mnist_subset, batch_size=self.public_bs, shuffle=True)
-            train_loader_private = DataLoader(dataset=semeion_subset, batch_size=self.batch_size, shuffle=True)
-
-            test_dataset  = Subset(full_dataset_2, range(int(0.8 * len(full_dataset_2)), len(full_dataset_2)))
-            test_loader  = DataLoader(dataset=test_dataset, batch_size=1000, shuffle=False)
-            self.public_loader = train_loader_public
-            self.train_loader = train_loader_private
-            self.test_loader = test_loader
+            pub_dataset = datasets.SEMEION(root='./data', transform=transform, download=True)
+            self.public_loader = DataLoader(dataset=pub_dataset, batch_size=64, shuffle=True)
 
         self.model = CNN()  # hard-coding a bit
         #self.model = nn.Linear(784, 10)
