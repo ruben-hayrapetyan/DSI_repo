@@ -10,7 +10,7 @@ class Trainer(BaseTrainer):
 
     def __init__(self, params):
         super(Trainer, self).__init__(params)
-        self.delta = 1 / 240000
+        # self.delta = 1 / 240000
         self.mean=dict()
         self.preconditioner = dict()
         for p_name, p in self.model.named_parameters():
