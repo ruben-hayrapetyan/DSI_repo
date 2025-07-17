@@ -82,79 +82,50 @@ class BaseTrainer(object):
             texts, labels = zip(*batch)
             return torch.stack(texts), torch.stack(labels)
 
+        imdb_subset = None
+        data_subset = None
+
+        
         if (self.dataset == "CornellMovie"):
             data = load_dataset("cornell-movie-review-data/rotten_tomatoes")
-
-            total_if_imdb_maxed = int(len(imdb["train"]) / 0.04)
-            total_if_data_maxed = int(len(data["train"]) / 0.96)
-            total_desired_size = min(total_if_imdb_maxed, total_if_data_maxed)
-            imdb_size = int(0.04 * total_desired_size)
-            data_size = int(0.96 * total_desired_size)
-
-            np.random.seed(42)
-            imdb_indices = np.random.choice(len(imdb["train"]), size=imdb_size, replace=False)
-            data_indices = np.random.choice(len(data["train"]), size=data_size, replace=False)
-
-            imdb_subset = imdb["train"].select(imdb_indices)
+            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
             data_subset = data["train"].select(data_indices)
+
+            imdb_subset = imdb["train"]  
         if self.dataset == "EnronSpam":
             data = load_dataset("SetFit/enron_spam")
-
-            total_if_imdb_maxed = int(len(imdb["train"]) / 0.04)
-            total_if_data_maxed = int(len(data["train"]) / 0.96)
-            total_desired_size = min(total_if_imdb_maxed, total_if_data_maxed)
-            imdb_size = int(0.04 * total_desired_size)
-            data_size = int(0.96 * total_desired_size)
-
-            np.random.seed(42)
-            imdb_indices = np.random.choice(len(imdb["train"]), size=imdb_size, replace=False)
-            data_indices = np.random.choice(len(data["train"]), size=data_size, replace=False)
-
-            imdb_subset = imdb["train"].select(imdb_indices)
+            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
             data_subset = data["train"].select(data_indices)
+
+            imdb_subset = imdb["train"]
         if self.dataset == "Sentiment140":
             data = load_dataset("adilbekovich/Sentiment140Twitter")
-
-            total_if_imdb_maxed = int(len(imdb["train"]) / 0.04)
-            total_if_data_maxed = int(len(data["train"]) / 0.96)
-            total_desired_size = min(total_if_imdb_maxed, total_if_data_maxed)
-            imdb_size = int(0.04 * total_desired_size)
-            data_size = int(0.96 * total_desired_size)
-
-            np.random.seed(42)
-            imdb_indices = np.random.choice(len(imdb["train"]), size=imdb_size, replace=False)
-            data_indices = np.random.choice(len(data["train"]), size=data_size, replace=False)
-
-            imdb_subset = imdb["train"].select(imdb_indices)
+            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
             data_subset = data["train"].select(data_indices)
-        if self.dataset == "SST2":
+
+            imdb_subset = imdb["train"]
+        if self.dataset == "SetFit/sst2":
             data = load_dataset("SetFit/sst2")
-
-            total_if_imdb_maxed = int(len(imdb["train"]) / 0.04)
-            total_if_data_maxed = int(len(data["train"]) / 0.96)
-            total_desired_size = min(total_if_imdb_maxed, total_if_data_maxed)
-            imdb_size = int(0.04 * total_desired_size)
-            data_size = int(0.96 * total_desired_size)
-
-            np.random.seed(42)
-            imdb_indices = np.random.choice(len(imdb["train"]), size=imdb_size, replace=False)
-            data_indices = np.random.choice(len(data["train"]), size=data_size, replace=False)
-
-            imdb_subset = imdb["train"].select(imdb_indices)
+            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
             data_subset = data["train"].select(data_indices)
 
-        self.public_loader = DataLoader(
+            imdb_subset = imdb["train"]
+        
+        print(f"Type of IMDB {type(imdb_subset)}")
+        print(f"Type of Data {type(data_subset)}")
+
+        self.train_loader = DataLoader(
             TextDataset(imdb_subset, label_transform=lambda x: x, text_field="text"),
             batch_size=64, shuffle=True, collate_fn=collate_batch
         )
 
-        self.train_loader = DataLoader(
+        self.public_loader = DataLoader(
             TextDataset(data_subset, label_transform=lambda x: x, text_field="text"),
             batch_size=64, shuffle=True, collate_fn=collate_batch
         )
 
         self.test_loader = DataLoader(
-            TextDataset(data["test"], label_transform=lambda x: x, text_field="text"),
+            TextDataset(imdb["test"], label_transform=lambda x: x, text_field="text"),
             batch_size=64, shuffle=False, collate_fn=collate_batch
         )
         
