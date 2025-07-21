@@ -57,10 +57,43 @@ class BaseTrainer(object):
         class Model(nn.Module):
             def __init__(self, vocab_size, num_classes=2):
                 super().__init__()
-                self.fc = nn.Linear(vocab_size, num_classes)
+                self.fc1 = nn.Linear(vocab_size, 128)
+                self.fc2 = nn.Linear(128, 64)
+                self.fc3 = nn.Linear(64, 16)
+                self.fc4 = nn.Linear(16, num_classes)
 
             def forward(self, x):
-                return self.fc(x)
+                x = self.fc1(x)
+                x = self.fc2(x)
+                x = self.fc3(x)
+                return self.fc4(x)
+        # def text_pipeline(text, max_len=256):
+        #     tokens = tokenize(text)[:max_len]
+        #     token_ids = [vocab.get(token, UNK_IDX) for token in tokens]
+        #     if len(token_ids) < max_len:
+        #         token_ids += [PAD_IDX] * (max_len - len(token_ids))
+        #     return torch.tensor(token_ids, dtype=torch.long)
+        # class Model(nn.Module):
+        #     def __init__(self, vocab_size, embed_dim=128, hidden_dim=128, num_classes=2, pad_idx=0):
+        #         super().__init__()
+        #         self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=pad_idx)
+        #         self.gru = nn.GRU(embed_dim, hidden_dim, batch_first=True)
+        #         self.fc = nn.Linear(hidden_dim, num_classes)
+        #     def forward(self, x):
+        #         embeds = self.embedding(x)
+        #         _, h_n = self.gru(embeds)
+        #         return self.fc(h_n.squeeze(0))
+        # class Model(nn.Module):
+        #     def __init__(self, vocab_size, embed_dim=128, hidden_dim=128, num_classes=2, pad_idx=0):
+        #         super().__init__()
+        #         self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=pad_idx)
+        #         self.rnn = nn.RNN(embed_dim, hidden_dim, batch_first=True)
+        #         self.fc = nn.Linear(hidden_dim, num_classes)
+        #     def forward(self, x):
+        #         embeds = self.embedding(x)
+        #         _, h_n = self.rnn(embeds)
+                # return self.fc(h_n.squeeze(0))
+
            
         class TextDataset(Dataset):
             def __init__(self, hf_dataset, label_transform, text_field, max_len=256):
@@ -110,6 +143,27 @@ class BaseTrainer(object):
             data_subset = data["train"].select(data_indices)
 
             imdb_subset = imdb["train"]
+        if self.dataset == "amazon_polarity":
+            data = load_dataset("amazon_polarity")
+            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_subset = data["train"].select(data_indices)
+
+            imdb_subset = imdb["train"]
+        if self.dataset == "cola":
+            data = {
+                "train": load_dataset("shivkumarganesh/CoLA", split="train"),
+            }
+            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_subset = data["train"].select(data_indices)
+
+            imdb_subset = imdb["train"]
+        if self.dataset == "yelp":
+            data = load_dataset("yelp_polarity")
+            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_subset = data["train"].select(data_indices)
+
+            imdb_subset = imdb["train"]
+
         
         print(f"Type of IMDB {type(imdb_subset)}")
         print(f"Type of Data {type(data_subset)}")
@@ -118,11 +172,16 @@ class BaseTrainer(object):
             TextDataset(imdb_subset, label_transform=lambda x: x, text_field="text"),
             batch_size=64, shuffle=True, collate_fn=collate_batch
         )
-
-        self.public_loader = DataLoader(
-            TextDataset(data_subset, label_transform=lambda x: x, text_field="text"),
-            batch_size=64, shuffle=True, collate_fn=collate_batch
-        )
+        if self.dataset == "amazon_polarity":
+            self.public_loader = DataLoader(
+                TextDataset(data_subset, label_transform=lambda x: x, text_field="content"),
+                batch_size=64, shuffle=True, collate_fn=collate_batch
+            )
+        else:
+            self.public_loader = DataLoader(
+                TextDataset(data_subset, label_transform=lambda x: x, text_field="text"),
+                batch_size=64, shuffle=True, collate_fn=collate_batch
+            )
 
         self.test_loader = DataLoader(
             TextDataset(imdb["test"], label_transform=lambda x: x, text_field="text"),
@@ -167,7 +226,7 @@ class BaseTrainer(object):
         #                                                shuffle=False)
 
         #self.model = LSTM(max_words=10000, emb_size=64, hid_size=64)  # hard-coding a bit
-        self.model = Model(len(vocab), num_classes=2)
+        self.model = Model(len(vocab))
         print(self.model)
         self.loss = nn.CrossEntropyLoss()
         self.loss_flat = nn.CrossEntropyLoss(reduction='none')
