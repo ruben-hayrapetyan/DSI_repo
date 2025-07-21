@@ -3,9 +3,9 @@ python3 main.py \
 --scale 1 \
 --use_public 1 \
 --batch_size 64 \
---epochs 16 \
---sigma 0.652 \
+--epochs 11 \
+--sigma 0.69 \
 --clipping_bound 1.0 \
 --lr 0.01 \
---dataset FashionMNIST \
+--dataset CornellMovie \
 --public_bs 64
