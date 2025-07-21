@@ -4,7 +4,7 @@ import copy
 import torch
 from torch.nn.utils import clip_grad_norm_
 from .model_base import BaseTrainer
-from compute_privacy_sgm import *
+from .compute_privacy_sgm import *
 
 
 class Trainer(BaseTrainer):
@@ -86,11 +86,11 @@ class Trainer(BaseTrainer):
 
 
                 for p_name, p in self.model.named_parameters():
-                    if self.device.type == 'cuda':
-                        noise = torch.cuda.FloatTensor(p.grad.shape).normal_(0, self.sigma * self.clipping_bound)
-                    else:
-                        noise = torch.FloatTensor(p.grad.shape).normal_(0, self.sigma * self.clipping_bound)
-                    saved_var[p_name].add_(noise)
+                    # if self.device.type == 'cuda':
+                    #     noise = torch.cuda.FloatTensor(p.grad.shape).normal_(0, self.sigma * self.clipping_bound)
+                    # else:
+                    #     noise = torch.FloatTensor(p.grad.shape).normal_(0, self.sigma * self.clipping_bound)
+                    # saved_var[p_name].add_(noise)
                     p.grad = saved_var[p_name] / self.num_microbatches
 
                 self.optimizer.step()

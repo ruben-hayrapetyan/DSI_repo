@@ -5,8 +5,8 @@ import math
 
 import numpy as np
 
-from rdp_accountant import compute_rdp
-from rdp_accountant import get_privacy_spent
+from .rdp_accountant import compute_rdp
+from .rdp_accountant import get_privacy_spent
 
 def apply_dp_sgd_analysis(q, sigma, steps, orders, delta):
     """Compute and print results of DP-SGD analysis."""
