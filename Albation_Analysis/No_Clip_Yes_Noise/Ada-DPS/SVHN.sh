@@ -1,0 +1,11 @@
+python3 main.py \
+--method dp-sgd \
+--scale 1 \
+--use_public 1 \
+--batch_size 64 \
+--epochs 16 \
+--sigma 0.652 \
+--clipping_bound 1.0 \
+--lr 0.01 \
+--dataset SVHN \
+--public_bs 64
