@@ -80,50 +80,44 @@ class BaseTrainer(object):
 
         if self.dataset == "USPS":
             pub_dataset = datasets.USPS(root='./data', train=True, transform=transform, download=True)
-            np.random.seed(42)
-            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
-            public_subset = Subset(pub_dataset, indices)
-            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
+            self.public_loader = DataLoader(dataset=pub_dataset, batch_size=64, shuffle=True)
         if self.dataset == "MNIST":
             pub_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            indices = np.random.choice(len(pub_dataset), size=12500, replace=False)
             public_subset = Subset(pub_dataset, indices)
             self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "FashionMNIST":
             pub_dataset = datasets.FashionMNIST(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            indices = np.random.choice(len(pub_dataset), size=12500, replace=False)
             public_subset = Subset(pub_dataset, indices)
             self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "SVHN":
             pub_dataset = datasets.SVHN(root='./data', split='train', transform=transform, download=True)
             np.random.seed(42)
-            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            indices = np.random.choice(len(pub_dataset), size=12500, replace=False)
             public_subset = Subset(pub_dataset, indices)
             self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "CIFAR10":
             pub_dataset = datasets.CIFAR10(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            indices = np.random.choice(len(pub_dataset), size=12500, replace=False)
             public_subset = Subset(pub_dataset, indices)
             self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True) 
         if self.dataset == "STL10":
             pub_dataset = datasets.STL10(root='./data', split='train', transform=transform, download=True)
-            np.random.seed(42)
-            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
-            public_subset = Subset(pub_dataset, indices)
-            self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
+            self.public_loader = DataLoader(dataset=pub_dataset, batch_size=64, shuffle=True)
         if self.dataset == "QMNIST":
             pub_dataset = datasets.QMNIST(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            indices = np.random.choice(len(pub_dataset), size=12500, replace=False)
             public_subset = Subset(pub_dataset, indices)
             self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "KMNIST":
             pub_dataset = datasets.KMNIST(root='./data', train=True, transform=transform, download=True)
             np.random.seed(42)
-            indices = np.random.choice(len(pub_dataset), size=2500, replace=False)
+            indices = np.random.choice(len(pub_dataset), size=12500, replace=False)
             public_subset = Subset(pub_dataset, indices)
             self.public_loader = DataLoader(dataset=public_subset, batch_size=64, shuffle=True)
         if self.dataset == "SEMEION":
