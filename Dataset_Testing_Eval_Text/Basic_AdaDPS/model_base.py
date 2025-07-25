@@ -96,43 +96,43 @@ class BaseTrainer(object):
         
         if (self.dataset == "CornellMovie"):
             data = load_dataset("cornell-movie-review-data/rotten_tomatoes")
-            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=6250, replace=False)
             data_subset = data["train"].select(data_indices)
 
             imdb_subset = imdb["train"]  
         if self.dataset == "EnronSpam":
             data = load_dataset("SetFit/enron_spam")
-            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=6250, replace=False)
             data_subset = data["train"].select(data_indices)
 
             imdb_subset = imdb["train"]
         if self.dataset == "Sentiment140":
             data = load_dataset("adilbekovich/Sentiment140Twitter")
-            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=6250, replace=False)
             data_subset = data["train"].select(data_indices)
 
             imdb_subset = imdb["train"]
         if self.dataset == "SST2":
             data = load_dataset("SetFit/sst2")
-            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=6250, replace=False)
             data_subset = data["train"].select(data_indices)
 
             imdb_subset = imdb["train"]
         if self.dataset == "Yelp":
             data = load_dataset("yelp_polarity")
-            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=6250, replace=False)
             data_subset = data["train"].select(data_indices)
 
             imdb_subset = imdb["train"]
         if self.dataset == "Amazon":
             data = load_dataset("amazon_polarity")
-            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=6250, replace=False)
             data_subset = data["train"].select(data_indices)
 
             imdb_subset = imdb["train"]
         if self.dataset == "CoLA":
             data = load_dataset("shivkumarganesh/CoLA")
-            data_indices = np.random.choice(len(data["train"]), size=1000, replace=False)
+            data_indices = np.random.choice(len(data["train"]), size=6250, replace=False)
             data_subset = data["train"].select(data_indices)
 
             imdb_subset = imdb["train"]
