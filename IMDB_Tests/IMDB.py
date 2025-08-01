@@ -8,6 +8,7 @@ import re
 import string
 from collections import Counter
 import gc
+from opacus import PrivacyEngine
 
 # === Load datasets ===
 imdb = load_dataset("imdb")
@@ -39,24 +40,27 @@ PAD_IDX = vocab["<pad>"]
 UNK_IDX = vocab["<unk>"]
 
 def text_pipeline(text, max_len=256):
-    tokens = tokenize(text)
-    ids = [vocab.get(token, UNK_IDX) for token in tokens[:max_len]]
-    return torch.tensor(ids, dtype=torch.long)
+    tokens = tokenize(text)[:max_len]
+    bow_vector = torch.zeros(len(vocab), dtype=torch.float)
+    for token in tokens:
+        idx = vocab.get(token, UNK_IDX)
+        bow_vector[idx] += 1
+    return bow_vector
 
 # === Dataset Wrappers ===
 class TextDataset(Dataset):
-    def __init__(self, hf_dataset, label_transform, max_len=256):
+    def __init__(self, hf_dataset, label_transform, text_field, max_len=256):
         self.data = hf_dataset
         self.label_transform = label_transform
         self.max_len = max_len
+        self.text_field = text_field
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         item = self.data[idx]
-        text_field = item["text"] if "text" in item else item["content"]
-        tokens = text_pipeline(text_field, max_len=self.max_len)
+        tokens = text_pipeline(item[self.text_field], max_len=self.max_len)
         label = torch.tensor(self.label_transform(item["label"]), dtype=torch.long)
         return tokens, label
 
@@ -66,55 +70,100 @@ def collate_batch(batch):
     return padded, torch.stack(labels)
 
 # === Dataloaders ===
-train_loader_imdb = DataLoader(TextDataset(imdb["train"], lambda x: x), batch_size=64, shuffle=True, collate_fn=collate_batch)
-test_loader = DataLoader(TextDataset(imdb["test"], lambda x: x), batch_size=64, shuffle=True, collate_fn=collate_batch)
+train_loader_imdb = DataLoader(TextDataset(imdb["train"], lambda x: x, text_field="text"), batch_size=64, shuffle=True, collate_fn=collate_batch)
+test_loader = DataLoader(TextDataset(imdb["test"], lambda x: x, text_field="text"), batch_size=64, shuffle=True, collate_fn=collate_batch)
 
 
 # === Model ===
-class TextClassifier(nn.Module):
-    def __init__(self, vocab_size, embed_dim=100, hidden_dim=128, num_classes=2):
+class Model(nn.Module):
+    def __init__(self, vocab_size, num_classes=2):
         super().__init__()
-        self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=PAD_IDX)
-        self.lstm = nn.LSTM(embed_dim, hidden_dim, batch_first=True)
-        self.fc = nn.Linear(hidden_dim, num_classes)
+        self.fc = nn.Linear(vocab_size, num_classes)
 
     def forward(self, x):
-        x = self.embedding(x)
-        _, (h_n, _) = self.lstm(x)
-        return self.fc(h_n[-1])
+        return self.fc(x)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = TextClassifier(len(vocab), num_classes=2).to(device)
+model = Model(len(vocab), num_classes=2).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
+privacy_engine = PrivacyEngine()
 
 # === Train on IMDB ===
-print("Training on IMDB...")
-for epoch in range(10):
+epochs_2 = 15
+train_losses_2 = []
+train_accuracies_2 = []
+test_losses_2 = []
+test_accuracies_2 = []
+model.train()
+target_delta = 1e-5
+model, optimizer, train_loader_private = privacy_engine.make_private_with_epsilon(
+    module=model,
+    optimizer=optimizer,
+    data_loader=train_loader_imdb,
+    epochs=epochs_2,
+    target_epsilon=3,
+    target_delta=target_delta,
+    max_grad_norm=0.1,
+)
+for epoch in range(epochs_2):
     model.train()
-    total_loss, correct, total = 0.0, 0, 0
-    for x, y in train_loader_imdb:
-        x, y = x.to(device), y.to(device)
+    running_loss = 0.0
+    correct = 0
+    total = 0
+
+    for inputs, labels in train_loader_private:
         optimizer.zero_grad()
-        out = model(x)
-        loss = criterion(out, y)
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
-        total_loss += loss.item() * y.size(0)
-        correct += (out.argmax(1) == y).sum().item()
-        total += y.size(0)
-    print(f"[Epoch {epoch+1}/10] Loss: {total_loss/total:.4f}, Accuracy: {100*correct/total:.2f}%")
+        running_loss += loss.item() * inputs.size(0)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+    print(f'Epoch [{epoch + 1}/{epochs_2}]')
+    print("Training loss", (running_loss / total))
+    train_losses_2.append(running_loss / total)
+    print("Training accuracy", (correct *100/ total),'%')
+    train_accuracies_2.append(correct * 100 / total)
     gc.collect()
 
+    epsilon = privacy_engine.get_epsilon(delta=target_delta)
+    print(f"Privacy Budget (epsilon, delta): ({epsilon:.2f}, {target_delta})")
 
-model.eval()
-total_loss, correct, total = 0.0, 0, 0
-with torch.no_grad():
-    for x, y in test_loader:
-        x, y = x.to(device), y.to(device)
-        out = model(x)
-        loss = criterion(out, y)
-        total_loss += loss.item() * y.size(0)
-        correct += (out.argmax(1) == y).sum().item()
-        total += y.size(0)
-print(f"\nTest Loss: {total_loss/total:.4f}, Accuracy: {100*correct/total:.2f}%")
+    model.eval()
+    running_loss_eval = 0.0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            running_loss_eval += loss.item() * inputs.size(0)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+    print("Testing loss", (running_loss_eval / total))
+    test_losses_2.append(running_loss_eval / total)
+    print("Testing accuracy", (correct*100 / total),'%')
+    test_accuracies_2.append(correct * 100 / total)
+
+    gc.collect()
+    model.eval()
+    correct = 0
+    total = 0
+    eval_loss = 0.0
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            eval_loss += loss.item() * inputs.size(0)
+            _, predicted = torch.max(outputs.data, 1)
+            correct += (predicted == labels).sum().item()
+            total += labels.size(0)
+
+print(f"Test Loss: {eval_loss / total:.4f}, Accuracy: {100 * correct / total:.2f}%")
